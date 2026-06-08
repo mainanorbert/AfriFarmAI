@@ -25,18 +25,6 @@ ShambaAI is a multilingual AI-powered agricultural assistant that enables farmer
 * The application is publicly accessible through Hugging Face Spaces.
 * Frontend and backend validation tests pass before submission.
 
-## Architecture Sketch
-
-* Next.js frontend for voice recording, text input, image upload, diagnosis display, audio playback, and agro-dealer recommendations.
-* FastAPI backend for speech transcription orchestration, translation workflows, image analysis, diagnosis generation, agro-dealer lookup, text-to-speech generation, and API management.
-* Cohere Transcribe API for speech-to-text conversion.
-* Tiny Aya model for Swahili and Dholuo translation.
-* MiniCPM-V 4.6 multimodal model for crop and livestock image analysis.
-* Nemotron Nano Omni model for disease diagnosis and treatment reasoning.
-* PostgreSQL database for storing agro-dealers, user sessions, diagnosis history, and analytics.
-* Geolocation service for identifying nearby agro-dealers.
-* Hugging Face Spaces deployment for hackathon submission and public access.
-
 ## Tech Stack
 
 ### Frontend

@@ -1,0 +1,1 @@
+"""AfriFarmAI Gradio frontend."""

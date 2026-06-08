@@ -1,0 +1,1 @@
+"""AfriFarmAI backend package."""
