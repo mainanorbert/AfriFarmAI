@@ -1,0 +1,13 @@
+# --- Core runtime (required to run the app with stubs) ---
+gradio==6.17.3        # if a Spaces build rejects this, drop to latest 5.x
+pydantic==2.9.2
+python-dotenv==1.0.1
+requests==2.32.3
+gTTS==2.5.3            # lightweight TTS fallback for the voice reply
+
+# --- Real-model integration (uncomment when wiring Path A providers) ---
+# transformers==4.46.0
+# torch==2.4.1
+# huggingface_hub==0.25.2
+# cohere==5.11.0        # Tiny Aya localization / Cohere hosted inference
+# accelerate==1.0.1
