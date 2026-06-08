@@ -52,19 +52,23 @@ def analyze(req: AnalyzeRequest) -> AnalyzeResult:
             low_confidence=low,
         )
 
-    # 2) Diagnose (omni model handles image + reasoning together).
-    raw = nemotron_client.diagnose(transcript, req.image_path)
+    # 2) Forward-translate to English — the diagnosis model is weak in Swahili,
+    #    so reason in English then localize the result back (step 4).
+    symptom_en = tiny_aya_client.translate_to_english(transcript, req.language)
 
-    # 3) Safety gating (low-confidence fallback, escalation flags).
+    # 3) Diagnose (omni model handles image + reasoning together).
+    raw = nemotron_client.diagnose(symptom_en, req.image_path)
+
+    # 4) Safety gating (low-confidence fallback, escalation flags).
     diagnosis, low_confidence = apply_safety(raw)
 
-    # 4) Localize to the farmer's language.
+    # 5) Localize to the farmer's language.
     message = tiny_aya_client.localize(diagnosis, req.language)
 
-    # 5) Spoken reply.
+    # 6) Spoken reply.
     audio_reply = tts_client.synthesize(message, req.language)
 
-    # 6) Nearby dealers (only when we have a usable diagnosis).
+    # 7) Nearby dealers (only when we have a usable diagnosis).
     found = [] if low_confidence else dealers_service.find_nearby(county=req.county)
 
     log.info("analyze op=pipeline path=full low=%s", low_confidence)

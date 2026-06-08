@@ -22,6 +22,11 @@ _STUB_BY_LANG: dict[Language, str] = {
 }
 
 
+def _transcribe_stub(language: Language) -> str:
+    log.info("transcribe stub op=stt lang=%s", language)
+    return _STUB_BY_LANG.get(language, _STUB_BY_LANG["sw"])
+
+
 def transcribe(audio_path: str, language: Language = "sw") -> str:
     """Transcribe a voice message to text in its source language.
 
@@ -29,12 +34,12 @@ def transcribe(audio_path: str, language: Language = "sw") -> str:
     sample so the rest of the pipeline can be exercised end-to-end.
     """
 
-    if not settings.use_real_models:
-        log.info("transcribe stub op=stt lang=%s", language)
-        return _STUB_BY_LANG.get(language, _STUB_BY_LANG["sw"])
+    if not settings.use_real_stt:
+        return _transcribe_stub(language)
 
     # TODO(real): call HF Inference / local Whisper or MMS with ASR_MODEL.
     #   from huggingface_hub import InferenceClient
     #   client = InferenceClient(model=settings.asr_model, token=settings.hf_token)
     #   return client.automatic_speech_recognition(audio_path).text
-    raise NotImplementedError("Real ASR not wired yet; set USE_REAL_MODELS=false.")
+    log.warning("transcribe op=stt real_not_wired=1 fallback=stub")
+    return _transcribe_stub(language)

@@ -19,21 +19,26 @@ log = get_logger("services.tts")
 _GTTS_LANG: dict[Language, str] = {"sw": "sw", "luo": "sw", "en": "en"}
 
 
+def _synthesize_stub(text: str, language: Language) -> Optional[str]:
+    try:
+        from gtts import gTTS
+
+        tts = gTTS(text=text, lang=_GTTS_LANG.get(language, "en"))
+        path = tempfile.mktemp(suffix=".mp3")
+        tts.save(path)
+        log.info("synthesize stub op=tts lang=%s ok=1", language)
+        return path
+    except Exception:  # offline / quota — degrade gracefully, no content logged
+        log.warning("synthesize stub op=tts lang=%s ok=0", language)
+        return None
+
+
 def synthesize(text: str, language: Language) -> Optional[str]:
     """Render ``text`` to an audio file and return its path, or None on failure."""
 
-    if not settings.use_real_models:
-        try:
-            from gtts import gTTS
-
-            tts = gTTS(text=text, lang=_GTTS_LANG.get(language, "en"))
-            path = tempfile.mktemp(suffix=".mp3")
-            tts.save(path)
-            log.info("synthesize stub op=tts lang=%s ok=1", language)
-            return path
-        except Exception:  # offline / quota — degrade gracefully, no content logged
-            log.warning("synthesize stub op=tts lang=%s ok=0", language)
-            return None
+    if not settings.use_real_tts:
+        return _synthesize_stub(text, language)
 
     # TODO(real): MMS-TTS for Dholuo (facebook/mms-tts-luo); hosted TTS for sw/en.
-    raise NotImplementedError("Real TTS not wired yet; set USE_REAL_MODELS=false.")
+    log.warning("synthesize op=tts real_not_wired=1 fallback=stub")
+    return _synthesize_stub(text, language)
