@@ -10,6 +10,8 @@ UI = {
     "image": "Photo of crop or animal / Picha",
     "text": "Or type symptoms / Au andika dalili",
     "county": "County (for dealers) / Kaunti",
+    "use_location": "📍 Use my location / Tumia eneo langu",
+    "location_status": "Location / Eneo",
     "submit": "Diagnose / Chunguza",
     "transcript": "What we heard / Tuliyosikia",
     "diagnosis": "Diagnosis / Uchunguzi",

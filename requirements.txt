@@ -7,7 +7,7 @@ gTTS==2.5.3            # lightweight TTS fallback for the voice reply
 
 # --- Real-model integration ---
 cohere==7.0.3           # Tiny Aya translation + localization (hosted Chat API)
+huggingface_hub==1.16.1 # HF Inference ASR (Whisper/MMS) for speech-to-text
 # transformers==4.46.0  # uncomment for local ASR / MMS-TTS
 # torch==2.4.1
-# huggingface_hub==0.25.2
 # accelerate==1.0.1

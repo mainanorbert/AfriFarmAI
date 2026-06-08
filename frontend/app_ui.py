@@ -17,6 +17,26 @@ _SEVERITY_EMOJI = {
     Severity.UNKNOWN: "⚪",
 }
 
+# Runs in the browser: ask for GPS and return [lat, lon, status] to the UI.
+# Geolocation requires a secure context (HTTPS or localhost) — true on Spaces.
+_GEO_JS = """
+() => {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) {
+      resolve([null, null, "Geolocation not supported on this device"]);
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (p) => resolve([p.coords.latitude, p.coords.longitude,
+                      "Location set ✓ (" + p.coords.latitude.toFixed(3) + ", "
+                      + p.coords.longitude.toFixed(3) + ")"]),
+      ()  => resolve([null, null, "Location unavailable or permission denied"]),
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  });
+}
+"""
+
 
 def _render_diagnosis(result: AnalyzeResult) -> str:
     """Format the diagnosis as a compact Markdown card."""
@@ -54,6 +74,8 @@ def _on_submit(
     image_path: Optional[str],
     text: Optional[str],
     county: Optional[str],
+    lat: Optional[float],
+    lon: Optional[float],
 ):
     """Gradio callback: build the request, run the pipeline, render outputs."""
 
@@ -63,6 +85,8 @@ def _on_submit(
         image_path=image_path,
         text=text,
         county=county or None,
+        lat=lat,
+        lon=lon,
     )
     result = analyze(req)
     transcript = result.transcript or "_(no voice/text provided)_"
@@ -91,6 +115,14 @@ def build_ui() -> gr.Blocks:
                 image = gr.Image(type="filepath", label=UI["image"])
                 text = gr.Textbox(lines=2, label=UI["text"], placeholder="…")
                 county = gr.Textbox(label=UI["county"], placeholder="e.g. Kisumu")
+                with gr.Row():
+                    locate = gr.Button(UI["use_location"], size="sm")
+                    loc_status = gr.Textbox(
+                        label=UI["location_status"], interactive=False, scale=2
+                    )
+                # Hidden holders populated by the browser geolocation call.
+                lat = gr.Number(visible=False)
+                lon = gr.Number(visible=False)
                 submit = gr.Button(UI["submit"], variant="primary")
 
             with gr.Column(scale=2):
@@ -101,9 +133,12 @@ def build_ui() -> gr.Blocks:
 
         gr.Markdown(f"---\n_{UI['disclaimer']}_")
 
+        # Browser-side geolocation fills the hidden lat/lon and a status line.
+        locate.click(fn=None, inputs=None, outputs=[lat, lon, loc_status], js=_GEO_JS)
+
         submit.click(
             _on_submit,
-            inputs=[language, audio, image, text, county],
+            inputs=[language, audio, image, text, county, lat, lon],
             outputs=[transcript_out, diagnosis_out, audio_out, dealers_out],
         )
 

@@ -17,6 +17,23 @@ def test_maize_symptom_text_produces_crop_diagnosis_and_dealers():
     assert result.dealers, "expected dealer suggestions for a confident diagnosis"
 
 
+def test_gps_coordinates_rank_dealers_by_distance():
+    # Coordinates at Ahero (Lakeside Farm Supplies) — it should rank first with
+    # a real distance, and the list should be distance-ordered.
+    req = AnalyzeRequest(
+        language="sw",
+        text="Mahindi yangu yana madoa ya manjano",
+        lat=-0.1742,
+        lon=34.9180,
+    )
+    result = analyze(req)
+    assert result.dealers, "expected dealers for a confident diagnosis"
+    assert result.dealers[0].distance_km is not None
+    assert result.dealers[0].name == "Lakeside Farm Supplies"
+    distances = [d.distance_km for d in result.dealers if d.distance_km is not None]
+    assert distances == sorted(distances)
+
+
 def test_animal_case_is_marked_for_escalation():
     req = AnalyzeRequest(language="en", text="my cow has fever", county="Nakuru")
     result = analyze(req)

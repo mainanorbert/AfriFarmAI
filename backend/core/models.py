@@ -38,6 +38,12 @@ class AnalyzeRequest(BaseModel):
     county: Optional[str] = Field(
         default=None, description="Kenyan county used for dealer lookup."
     )
+    lat: Optional[float] = Field(
+        default=None, description="Farmer GPS latitude for nearest-dealer ranking."
+    )
+    lon: Optional[float] = Field(
+        default=None, description="Farmer GPS longitude for nearest-dealer ranking."
+    )
 
 
 class Dealer(BaseModel):

@@ -68,8 +68,13 @@ def analyze(req: AnalyzeRequest) -> AnalyzeResult:
     # 6) Spoken reply.
     audio_reply = tts_client.synthesize(message, req.language)
 
-    # 7) Nearby dealers (only when we have a usable diagnosis).
-    found = [] if low_confidence else dealers_service.find_nearby(county=req.county)
+    # 7) Nearby dealers (only when we have a usable diagnosis). GPS coordinates,
+    #    when shared, rank dealers by real distance from the farmer.
+    found = (
+        []
+        if low_confidence
+        else dealers_service.find_nearby(county=req.county, lat=req.lat, lon=req.lon)
+    )
 
     log.info("analyze op=pipeline path=full low=%s", low_confidence)
     return AnalyzeResult(
