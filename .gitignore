@@ -7,3 +7,9 @@ __pycache__/
 .gradio/
 flagged/
 .pytest_cache/
+CACHEDIR.TAG
+
+# Claude Code local files
+.claude/
+CLAUDE.md
+.claude.json
