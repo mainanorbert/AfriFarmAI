@@ -7,6 +7,7 @@
 - Create and activate the project-root environment: `python3 -m venv .venv && source .venv/bin/activate`.
 - Install dependencies with `python -m pip install -r requirements.txt`; use `pip`.
 - Never expose or commit `.env` values, secrets, tokens, or credentials; `.env.example` must contain placeholders only.
+- Everytime 
 
 ## Testing
 - Add focused tests for changed behavior and error paths; run focused checks before full checks.
@@ -37,6 +38,7 @@
 - `backend/api/`: routes/errors/middleware; `backend/services/`: provider clients; `backend/core/`: schemas/orchestration/safety/config.
 - `frontend/`: Gradio UI/localization; `data/`: approved dealer reference data; `tests/`: tests; `scripts/`: development helpers.
 - `requirements.txt`: pip dependencies; `.venv/`: local environment, never commit; `.env.example`: placeholders only.
+- Everytime you successfully install a new package to this project add the project and exact version to `requirements.txt`
 
 ## Definition Of Done
 - Changes match the request, `PROJECT_SPEC.md`, and `PROJECT_STRUCTURE.md`.
@@ -45,7 +47,6 @@
 - Final handoff lists changed files, checks run, skipped checks, and remaining risks.
 
 ## Extra Guardrails
-- Do not add persistent storage, personal-data collection, or retain conversations/media/locations without explicit approval.
 - Do not expose contact details except approved dealer phones in dealer data/results.
 - Treat AI output as decision support; escalate severe, urgent, uncertain, or worsening cases to professionals.
 - Do not recommend banned, unsafe, or unverified treatments; include safe-handling guidance when relevant.
