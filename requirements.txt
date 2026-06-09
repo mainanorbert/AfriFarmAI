@@ -4,6 +4,7 @@ pydantic==2.9.2
 python-dotenv==1.0.1
 requests==2.32.3
 gTTS==2.5.3            # lightweight TTS fallback for the voice reply
+edge-tts==7.2.8        # Kenyan Swahili/English neural voices
 
 # --- Real-model integration ---
 cohere==7.0.3           # Tiny Aya translation + localization (hosted Chat API)
