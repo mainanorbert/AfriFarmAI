@@ -1,9 +1,11 @@
-"""Speech-to-text for Swahili (Path A: Whisper large-v3, or fine-tuned MMS).
+"""Speech-to-text with per-language routing — always live, no canned data.
 
-NOTE: Cohere Transcribe was dropped from the original plan because it does
-not support Swahili or Dholuo. Swahili works off-the-shelf with Whisper/MMS;
-a fine-tuned checkpoint can replace ``ASR_MODEL`` later for the Well-Tuned
-badge without touching callers.
+  * English  -> Cohere Transcribe (top ASR accuracy on its 14 languages).
+  * Swahili / Dholuo -> Whisper (HF Inference). Cohere Transcribe does NOT
+    support Swahili/Dholuo, so it must never handle them.
+
+Any failure raises :class:`ProviderError` so the farmer gets an honest message
+rather than a fabricated transcript.
 """
 
 from __future__ import annotations
@@ -11,31 +13,16 @@ from __future__ import annotations
 from functools import lru_cache
 
 from backend.core.config import settings
+from backend.core.errors import ProviderError
 from backend.core.logging_utils import get_logger
 from backend.core.models import Language
 
 log = get_logger("services.stt")
 
-# Deterministic stub transcripts so the demo flow runs without model weights.
-_STUB_BY_LANG: dict[Language, str] = {
-    "sw": "Majani ya mahindi yangu yana madoa ya manjano na yanakauka.",
-    "luo": "It bel mara nigi range ma rachar kendo gidwogo motwo.",
-    "en": "My maize leaves have yellow spots and are drying up.",
-}
-
-
-def _transcribe_stub(language: Language) -> str:
-    log.info("transcribe stub op=stt lang=%s", language)
-    return _STUB_BY_LANG.get(language, _STUB_BY_LANG["sw"])
-
 
 @lru_cache(maxsize=1)
-def _client():
-    """Lazily build a shared HF Inference client (imported only on real path).
-
-    Pinned to the ``hf-inference`` provider so usage runs on Hugging Face's own
-    serverless inference (covered by the HF credit) rather than a third party.
-    """
+def _whisper_client():
+    """Lazily build a shared HF Inference client (hf-inference provider)."""
 
     from huggingface_hub import InferenceClient
 
@@ -47,28 +34,64 @@ def _client():
     )
 
 
-def transcribe(audio_path: str, language: Language = "sw") -> str:
-    """Transcribe a voice message to text in its source language.
+@lru_cache(maxsize=1)
+def _cohere_client():
+    """Lazily build a shared Cohere client for transcription."""
 
-    Uses HF Inference ASR (Whisper, which auto-detects the language) on the real
-    path. Any failure — missing token, cold-start, network — degrades to a
-    representative stub so the rest of the pipeline still runs.
-    """
+    import cohere
 
-    if not settings.use_real_stt:
-        return _transcribe_stub(language)
+    return cohere.ClientV2(
+        api_key=settings.cohere_api_key,
+        timeout=settings.provider_timeout_seconds,
+    )
+
+
+def _transcribe_whisper(audio_path: str, language: Language) -> str:
+    """Whisper via HF Inference (auto-detects language)."""
 
     if not settings.hf_token:
-        log.error("transcribe op=stt error=missing_hf_token fallback=stub")
-        return _transcribe_stub(language)
-
+        raise ProviderError("transcription", "missing HF token")
     try:
-        result = _client().automatic_speech_recognition(audio_path)
-        text = (result.text or "").strip()
-        if not text:
-            raise ValueError("empty transcription")
-        log.info("transcribe op=stt lang=%s ok=1", language)
-        return text
-    except Exception:  # no audio/content logged, per privacy guardrails
-        log.warning("transcribe op=stt lang=%s ok=0 fallback=stub", language)
-        return _transcribe_stub(language)
+        result = _whisper_client().automatic_speech_recognition(audio_path)
+    except Exception as exc:  # no audio/content logged, per privacy guardrails
+        log.warning("transcribe op=stt engine=whisper lang=%s ok=0", language)
+        raise ProviderError("transcription") from exc
+    text = (result.text or "").strip()
+    if not text:
+        raise ProviderError("transcription", "empty result")
+    log.info("transcribe op=stt engine=whisper lang=%s ok=1", language)
+    return text
+
+
+def _transcribe_cohere(audio_path: str, language: Language) -> str:
+    """Cohere Transcribe (English only here)."""
+
+    if not settings.cohere_api_key:
+        raise ProviderError("transcription", "missing Cohere key")
+    try:
+        with open(audio_path, "rb") as fh:
+            result = _cohere_client().audio.transcriptions.create(
+                model=settings.cohere_transcribe_model,
+                language=language,
+                file=fh,
+            )
+    except Exception as exc:  # no audio/content logged, per privacy guardrails
+        log.warning("transcribe op=stt engine=cohere lang=%s ok=0", language)
+        raise ProviderError("transcription") from exc
+    text = (result.text or "").strip()
+    if not text:
+        raise ProviderError("transcription", "empty result")
+    log.info("transcribe op=stt engine=cohere lang=%s ok=1", language)
+    return text
+
+
+def transcribe(audio_path: str, language: Language = "sw") -> str:
+    """Transcribe the farmer's recording, routing to the right engine.
+
+    English uses Cohere Transcribe; Swahili/Dholuo use Whisper. Raises
+    :class:`ProviderError` on any failure.
+    """
+
+    if language == "en":
+        return _transcribe_cohere(audio_path, language)
+    return _transcribe_whisper(audio_path, language)

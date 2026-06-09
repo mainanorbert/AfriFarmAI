@@ -1,30 +1,44 @@
-"""STT stub behaviour and real-path graceful degradation (no network calls)."""
+"""STT language routing and error behaviour (no network calls)."""
 
 from types import SimpleNamespace
 
+import pytest
+
+from backend.core.errors import ProviderError
 from backend.services import stt_client as s
 
 
-def test_stub_mode_returns_representative_transcript():
-    # conftest forces use_real_stt=False.
-    out = s.transcribe("/tmp/whatever.wav", "sw")
-    assert "mahindi" in out.lower()
+def test_english_routes_to_cohere(monkeypatch):
+    monkeypatch.setattr(s, "_transcribe_cohere", lambda p, l: "COHERE")
+    monkeypatch.setattr(s, "_transcribe_whisper", lambda p, l: "WHISPER")
+    assert s.transcribe("/tmp/a.wav", "en") == "COHERE"
 
 
-def test_real_path_without_token_falls_back_to_stub(monkeypatch):
-    monkeypatch.setattr(s, "settings", SimpleNamespace(use_real_stt=True, hf_token=""))
-    out = s.transcribe("/tmp/whatever.wav", "luo")
-    assert out == s._STUB_BY_LANG["luo"]
+def test_swahili_and_dholuo_route_to_whisper(monkeypatch):
+    monkeypatch.setattr(s, "_transcribe_cohere", lambda p, l: "COHERE")
+    monkeypatch.setattr(s, "_transcribe_whisper", lambda p, l: "WHISPER")
+    assert s.transcribe("/tmp/a.wav", "sw") == "WHISPER"
+    assert s.transcribe("/tmp/a.wav", "luo") == "WHISPER"
 
 
-def test_real_path_api_error_falls_back_to_stub(monkeypatch):
-    monkeypatch.setattr(
-        s, "settings", SimpleNamespace(use_real_stt=True, hf_token="hf_x")
-    )
+def test_whisper_without_token_raises(monkeypatch):
+    monkeypatch.setattr(s, "settings", SimpleNamespace(hf_token=""))
+    with pytest.raises(ProviderError):
+        s._transcribe_whisper("/tmp/a.wav", "luo")
+
+
+def test_cohere_without_key_raises(monkeypatch):
+    monkeypatch.setattr(s, "settings", SimpleNamespace(cohere_api_key=""))
+    with pytest.raises(ProviderError):
+        s._transcribe_cohere("/tmp/a.wav", "en")
+
+
+def test_whisper_api_error_raises(monkeypatch):
+    monkeypatch.setattr(s, "settings", SimpleNamespace(hf_token="hf_x"))
 
     def boom():
         raise RuntimeError("inference down")
 
-    monkeypatch.setattr(s, "_client", boom)
-    out = s.transcribe("/tmp/whatever.wav", "sw")
-    assert out == s._STUB_BY_LANG["sw"]
+    monkeypatch.setattr(s, "_whisper_client", boom)
+    with pytest.raises(ProviderError):
+        s._transcribe_whisper("/tmp/a.wav", "sw")

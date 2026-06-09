@@ -1,13 +1,13 @@
-"""Translation/localization via Cohere Tiny Aya (TinyAya-Earth for African
-languages), called through the Cohere hosted Chat API.
+"""Translation/localization via Cohere Tiny Aya, called through the Cohere
+hosted Chat API. Always live — no canned templates.
 
 Two jobs in the pipeline:
   * ``translate_to_english`` — forward-translate the farmer's Swahili/Dholuo so
     the diagnosis model (weak in Swahili) reasons in English.
   * ``localize`` — render the English diagnosis back into the farmer's language.
 
-Both degrade gracefully: any API failure falls back to the original text (for
-forward translation) or the hand-written stub template (for localization).
+If Cohere is unreachable these degrade to the real underlying text (the
+original transcript, or the English diagnosis) rather than fabricating output.
 """
 
 from __future__ import annotations
@@ -17,50 +17,17 @@ from functools import lru_cache
 
 from backend.core.config import settings
 from backend.core.logging_utils import get_logger
-from backend.core.models import Diagnosis, Language, Severity
+from backend.core.models import Diagnosis, Language
 
 log = get_logger("services.tiny_aya")
 
 _LANG_NAME: dict[Language, str] = {"sw": "Swahili", "luo": "Dholuo (Luo)", "en": "English"}
 
-_SEVERITY_LABEL: dict[Language, dict[Severity, str]] = {
-    "sw": {
-        Severity.MILD: "kidogo",
-        Severity.MODERATE: "wastani",
-        Severity.SEVERE: "kali",
-        Severity.UNKNOWN: "haijulikani",
-    },
-    "luo": {
-        Severity.MILD: "matin",
-        Severity.MODERATE: "madiere",
-        Severity.SEVERE: "marach",
-        Severity.UNKNOWN: "ok ongʼere",
-    },
-    "en": {
-        Severity.MILD: "mild",
-        Severity.MODERATE: "moderate",
-        Severity.SEVERE: "severe",
-        Severity.UNKNOWN: "unknown",
-    },
-}
-
-_TEMPLATE: dict[Language, str] = {
-    "sw": (
-        "Tatizo linalowezekana: {condition} (ukali: {severity}).\n"
-        "Tiba: {treatment}\n"
-        "Kinga: {prevention}"
-    ),
-    "luo": (
-        "Tuo manyalo bedo: {condition} (rachne: {severity}).\n"
-        "Thieth: {treatment}\n"
-        "Geng'o: {prevention}"
-    ),
-    "en": (
-        "Likely problem: {condition} (severity: {severity}).\n"
-        "Treatment: {treatment}\n"
-        "Prevention: {prevention}"
-    ),
-}
+_ENGLISH_TEMPLATE = (
+    "Likely problem: {condition} (severity: {severity}).\n"
+    "Treatment: {treatment}\n"
+    "Prevention: {prevention}"
+)
 
 
 def _model_id() -> str:
@@ -71,7 +38,7 @@ def _model_id() -> str:
 
 @lru_cache(maxsize=1)
 def _client():
-    """Lazily build a shared Cohere client (imported only on the real path)."""
+    """Lazily build a shared Cohere client."""
 
     import cohere
 
@@ -101,7 +68,7 @@ def _chat(prompt: str) -> str:
 def _compose_english(diagnosis: Diagnosis) -> str:
     """Build the canonical English farmer-facing message from a diagnosis."""
 
-    return _TEMPLATE["en"].format(
+    return _ENGLISH_TEMPLATE.format(
         condition=diagnosis.condition,
         severity=diagnosis.severity.value,
         treatment=diagnosis.treatment or "—",
@@ -112,11 +79,11 @@ def _compose_english(diagnosis: Diagnosis) -> str:
 def translate_to_english(text: str, source_language: Language) -> str:
     """Translate farmer input to English before diagnosis.
 
-    Returns ``text`` unchanged when the source is already English, the real
-    path is off, or the call fails.
+    Returns ``text`` unchanged when the source is already English/empty, or if
+    the translation call fails (the diagnosis model can still use the original).
     """
 
-    if not settings.use_real_aya or source_language == "en" or not text.strip():
+    if source_language == "en" or not text.strip():
         return text
 
     name = _LANG_NAME.get(source_language, "the source language")
@@ -134,23 +101,12 @@ def translate_to_english(text: str, source_language: Language) -> str:
         return text
 
 
-def _localize_stub(diagnosis: Diagnosis, language: Language) -> str:
-    log.info("localize stub op=translate lang=%s", language)
-    template = _TEMPLATE.get(language, _TEMPLATE["en"])
-    severity = _SEVERITY_LABEL[language][diagnosis.severity]
-    return template.format(
-        condition=diagnosis.condition,
-        severity=severity,
-        treatment=diagnosis.treatment or "—",
-        prevention=diagnosis.prevention or "—",
-    )
-
-
 def localize(diagnosis: Diagnosis, language: Language) -> str:
-    """Return a farmer-facing message rendered in ``language``."""
+    """Return a farmer-facing message rendered in ``language``.
 
-    if not settings.use_real_aya:
-        return _localize_stub(diagnosis, language)
+    On a Cohere failure, degrades to the real English diagnosis rather than
+    fabricating localized text.
+    """
 
     english = _compose_english(diagnosis)
     if language == "en":
@@ -169,6 +125,6 @@ def localize(diagnosis: Diagnosis, language: Language) -> str:
             raise ValueError("empty translation")
         log.info("localize op=translate lang=%s ok=1", language)
         return out
-    except Exception:  # degrade to the hand-written template
-        log.warning("localize op=translate lang=%s ok=0 fallback=stub", language)
-        return _localize_stub(diagnosis, language)
+    except Exception:  # degrade to the real English diagnosis
+        log.warning("localize op=translate lang=%s ok=0 fallback=english", language)
+        return english

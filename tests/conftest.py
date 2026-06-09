@@ -1,17 +1,13 @@
-"""Force deterministic, offline stub mode for the whole test suite.
+"""Test setup: inject dummy provider keys before the read-once ``settings`` is
+imported, so the suite never reaches a real API even if a mock is missed.
 
-Set before any backend module (and its read-once ``settings``) is imported, so
-a developer's ``.env`` with ``USE_REAL_MODELS=true`` never sends tests to the
-live providers. ``load_dotenv`` does not override already-set env vars.
+Tests mock the provider functions themselves (transcribe/diagnose/localize/
+synthesize); these dummy keys are just a safety net. ``load_dotenv`` does not
+override already-set env vars, so a developer's real ``.env`` is ignored here.
 """
 
 import os
 
-for _var in (
-    "USE_REAL_MODELS",
-    "USE_REAL_NEMOTRON",
-    "USE_REAL_STT",
-    "USE_REAL_AYA",
-    "USE_REAL_TTS",
-):
-    os.environ[_var] = "false"
+os.environ.setdefault("HF_TOKEN", "test-hf-token")
+os.environ.setdefault("NVIDIA_API_KEY", "test-nvidia-key")
+os.environ.setdefault("COHERE_API_KEY", "test-cohere-key")
