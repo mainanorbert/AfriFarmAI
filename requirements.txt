@@ -1,5 +1,13 @@
-gradio==5.34.2
-openai==1.93.0
-pytest==8.4.1
-python-dotenv==1.1.1
-requests==2.34.2
+# --- Core runtime (required to run the app with stubs) ---
+gradio==6.17.3        # if a Spaces build rejects this, drop to latest 5.x
+pydantic==2.9.2
+python-dotenv==1.0.1
+requests==2.32.3
+gTTS==2.5.3            # lightweight TTS fallback for the voice reply
+
+# --- Real-model integration ---
+cohere==7.0.3           # Tiny Aya translation + localization (hosted Chat API)
+huggingface_hub==1.16.1 # HF Inference ASR (Whisper/MMS) for speech-to-text
+# transformers==4.46.0  # uncomment for local ASR / MMS-TTS
+# torch==2.4.1
+# accelerate==1.0.1

@@ -1,1 +1,1 @@
-"""AfriFarmAI Gradio frontend."""
+"""Gradio frontend for AfriFarmAI."""

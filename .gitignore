@@ -1,10 +1,15 @@
-.env
 .venv/
 __pycache__/
-.pytest_cache/
-*.py[cod]
+*.pyc
 .env
-.venv/
-__pycache__/
+*.wav
+*.mp3
+.gradio/
+flagged/
 .pytest_cache/
-*.py[cod]
+CACHEDIR.TAG
+
+# Claude Code local files
+.claude/
+CLAUDE.md
+.claude.json

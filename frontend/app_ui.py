@@ -1,44 +1,145 @@
+"""One-screen Gradio Blocks UI wired to the orchestration pipeline."""
+
+from __future__ import annotations
+
+from typing import Optional
+
 import gradio as gr
 
-from backend.core.config import get_settings
-from backend.services.nvidia_chat_client import NvidiaChatClient, NvidiaChatError
+from backend.core.models import AnalyzeRequest, AnalyzeResult, Severity
+from backend.core.orchestration import analyze
+from frontend.strings import LANGUAGE_CHOICES, UI
+
+_SEVERITY_EMOJI = {
+    Severity.MILD: "🟢",
+    Severity.MODERATE: "🟡",
+    Severity.SEVERE: "🔴",
+    Severity.UNKNOWN: "⚪",
+}
+
+# Runs in the browser: ask for GPS and return [lat, lon, status] to the UI.
+# Geolocation requires a secure context (HTTPS or localhost) — true on Spaces.
+_GEO_JS = """
+() => {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) {
+      resolve([null, null, "Geolocation not supported on this device"]);
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (p) => resolve([p.coords.latitude, p.coords.longitude,
+                      "Location set ✓ (" + p.coords.latitude.toFixed(3) + ", "
+                      + p.coords.longitude.toFixed(3) + ")"]),
+      ()  => resolve([null, null, "Location unavailable or permission denied"]),
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  });
+}
+"""
 
 
-def respond(
-    prompt: str,
-    history: list[dict[str, str]] | None,
-) -> tuple[str, list[dict[str, str]]]:
-    """Send one prompt to NVIDIA and append its answer to UI-only history."""
-    history = history or []
-    prompt = prompt.strip()
-    if not prompt:
-        return "", history
+def _render_diagnosis(result: AnalyzeResult) -> str:
+    """Format the diagnosis as a compact Markdown card."""
 
-    try:
-        answer = NvidiaChatClient(get_settings()).chat(prompt)
-    except (NvidiaChatError, RuntimeError):
-        answer = "The model is unavailable. Check the NVIDIA settings and try again."
-
-    return "", history + [
-        {"role": "user", "content": prompt},
-        {"role": "assistant", "content": answer},
+    d = result.diagnosis
+    emoji = _SEVERITY_EMOJI.get(d.severity, "⚪")
+    lines = [
+        f"### {emoji} {d.condition}",
+        f"**Severity:** {d.severity.value}  ·  **Confidence:** {d.confidence:.0%}",
+        "",
+        result.localized_message,
     ]
+    if d.escalate:
+        lines.append("\n> ⚠️ **Please consult a vet or extension officer.**")
+    if result.low_confidence:
+        lines.append("\n> ℹ️ Low confidence — please send a clearer photo or more detail.")
+    return "\n".join(lines)
+
+
+def _render_dealers(result: AnalyzeResult) -> str:
+    """Format the dealer list as Markdown, or a gentle empty-state."""
+
+    if not result.dealers:
+        return "_No dealer suggestions for this result._"
+    rows = ["| Dealer | Town | Phone | Specialties |", "|---|---|---|---|"]
+    for d in result.dealers:
+        dist = f" ({d.distance_km} km)" if d.distance_km is not None else ""
+        rows.append(f"| {d.name}{dist} | {d.town} | {d.phone} | {d.specialties} |")
+    return "\n".join(rows)
+
+
+def _on_submit(
+    language: str,
+    audio_path: Optional[str],
+    image_path: Optional[str],
+    text: Optional[str],
+    county: Optional[str],
+    lat: Optional[float],
+    lon: Optional[float],
+):
+    """Gradio callback: build the request, run the pipeline, render outputs."""
+
+    req = AnalyzeRequest(
+        language=language,
+        audio_path=audio_path,
+        image_path=image_path,
+        text=text,
+        county=county or None,
+        lat=lat,
+        lon=lon,
+    )
+    result = analyze(req)
+    transcript = result.transcript or "_(no voice/text provided)_"
+    return (
+        transcript,
+        _render_diagnosis(result),
+        result.audio_reply_path,
+        _render_dealers(result),
+    )
 
 
 def build_ui() -> gr.Blocks:
-    with gr.Blocks(title="AfriFarmAI Chat") as demo:
-        gr.Markdown("# AfriFarmAI Chat")
-        chatbot = gr.Chatbot(type="messages", label="Conversation")
-        prompt = gr.Textbox(
-            label="Prompt",
-            placeholder="Ask the model something...",
+    """Construct the Gradio Blocks app."""
+
+    with gr.Blocks(title="AfriFarmAI") as demo:
+        gr.Markdown(f"# {UI['title']}\n{UI['subtitle']}")
+
+        with gr.Row():
+            with gr.Column(scale=1):
+                language = gr.Dropdown(
+                    choices=LANGUAGE_CHOICES, value="sw", label=UI["language"]
+                )
+                audio = gr.Audio(
+                    sources=["microphone", "upload"], type="filepath", label=UI["voice"]
+                )
+                image = gr.Image(type="filepath", label=UI["image"])
+                text = gr.Textbox(lines=2, label=UI["text"], placeholder="…")
+                county = gr.Textbox(label=UI["county"], placeholder="e.g. Kisumu")
+                with gr.Row():
+                    locate = gr.Button(UI["use_location"], size="sm")
+                    loc_status = gr.Textbox(
+                        label=UI["location_status"], interactive=False, scale=2
+                    )
+                # Hidden holders populated by the browser geolocation call.
+                lat = gr.Number(visible=False)
+                lon = gr.Number(visible=False)
+                submit = gr.Button(UI["submit"], variant="primary")
+
+            with gr.Column(scale=2):
+                transcript_out = gr.Markdown(label=UI["transcript"])
+                diagnosis_out = gr.Markdown(label=UI["diagnosis"])
+                audio_out = gr.Audio(label=UI["reply_audio"], autoplay=False)
+                dealers_out = gr.Markdown(label=UI["dealers"])
+
+        gr.Markdown(f"---\n_{UI['disclaimer']}_")
+
+        # Browser-side geolocation fills the hidden lat/lon and a status line.
+        locate.click(fn=None, inputs=None, outputs=[lat, lon, loc_status], js=_GEO_JS)
+
+        submit.click(
+            _on_submit,
+            inputs=[language, audio, image, text, county, lat, lon],
+            outputs=[transcript_out, diagnosis_out, audio_out, dealers_out],
         )
-        send = gr.Button("Send", variant="primary")
 
-        send.click(respond, [prompt, chatbot], [prompt, chatbot])
-        prompt.submit(respond, [prompt, chatbot], [prompt, chatbot])
     return demo
-
-
-if __name__ == "__main__":
-    build_ui().launch(server_name="0.0.0.0", server_port=7860, share=True)

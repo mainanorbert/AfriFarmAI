@@ -1,38 +1,46 @@
+"""Read-once application configuration loaded from environment.
+
+Values are read a single time at import so provider clients and the
+orchestration layer share one consistent view. Keep this module free of
+secrets in source — everything comes from the environment / `.env`.
+"""
+
+from __future__ import annotations
+
+import os
 from dataclasses import dataclass
-from pathlib import Path
 
-from dotenv import dotenv_values
+from dotenv import load_dotenv
 
-ENV_FILE = Path(__file__).resolve().parents[2] / ".env"
+load_dotenv()  # no-op if .env is absent (e.g. on Hugging Face Spaces secrets)
+
 
 @dataclass(frozen=True)
 class Settings:
-    nvidia_api_key: str
-    nvidia_model_name: str
-    nvidia_base_url: str
+    """Immutable runtime settings for AfriFarmAI.
 
+    The app always calls the real providers; missing keys surface as runtime
+    errors to the user rather than falling back to canned data.
+    """
 
-def get_settings() -> Settings:
-    """Read and validate the NVIDIA API configuration from the root .env file."""
-    values = dotenv_values(ENV_FILE)
-    api_key = (values.get("NVIDIA_API_KEY") or "").strip()
-    model_name = (values.get("NVIDIA_MODEL_NAME") or "").strip()
-    base_url = (values.get("NVIDIA_BASE_URL") or "").strip().rstrip("/")
+    hf_token: str = os.getenv("HF_TOKEN", "")
+    nvidia_api_key: str = os.getenv("NVIDIA_API_KEY", "")
+    cohere_api_key: str = os.getenv("COHERE_API_KEY", "")
 
-    missing = [
-        name
-        for name, value in (
-            ("NVIDIA_API_KEY", api_key),
-            ("NVIDIA_MODEL_NAME", model_name),
-            ("NVIDIA_BASE_URL", base_url),
-        )
-        if not value
-    ]
-    if missing:
-        raise RuntimeError(f"Missing required environment variable(s): {', '.join(missing)}")
-
-    return Settings(
-        nvidia_api_key=api_key,
-        nvidia_model_name=model_name,
-        nvidia_base_url=base_url,
+    nemotron_model: str = os.getenv(
+        "NEMOTRON_MODEL", "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning"
     )
+    nemotron_base_url: str = os.getenv(
+        "NEMOTRON_BASE_URL", "https://integrate.api.nvidia.com/v1"
+    )
+    tiny_aya_model: str = os.getenv("TINY_AYA_MODEL", "CohereLabs/tiny-aya-global")
+    asr_model: str = os.getenv("ASR_MODEL", "openai/whisper-large-v3")
+    cohere_transcribe_model: str = os.getenv(
+        "COHERE_TRANSCRIBE_MODEL", "cohere-transcribe-03-2026"
+    )
+
+    provider_timeout_seconds: int = int(os.getenv("PROVIDER_TIMEOUT_SECONDS", "30"))
+    min_confidence: float = float(os.getenv("MIN_CONFIDENCE", "0.45"))
+
+
+settings = Settings()
