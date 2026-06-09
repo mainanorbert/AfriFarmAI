@@ -3,18 +3,25 @@
 from __future__ import annotations
 
 UI = {
-    "title": "AfriFarmAI \U0001F33E",
-    "subtitle": "Crop & livestock health help for smallholder farmers — speak or show a photo.",
+    "title": "AfriFarmAI",
+    "subtitle": "Clear crop and livestock health guidance for smallholder farmers.",
     "language": "Language / Lugha",
-    "voice": "Voice message / Ujumbe wa sauti",
-    "image": "Photo of crop or animal / Picha",
-    "text": "Or type symptoms / Au andika dalili",
+    "voice": "Voice / Sauti",
+    "record": "\u25CF",
+    "image": "Photo / Picha",
+    "add_photo": "Add a photo / Ongeza picha",
+    "photo_icon": "Add image",
+    "prompt_placeholder": "Describe the symptoms, or add a voice note or photo...",
+    "welcome": (
+        "Hello! Describe what you see on your crop or animal. "
+        "You can type, record a voice note, or attach a photo."
+    ),
     "county": "County (for dealers) / Kaunti",
-    "use_location": "📍 Use my location / Tumia eneo langu",
+    "more_options": "Location and dealer options",
+    "response_details": "Spoken reply and nearby dealers",
+    "use_location": "Use my location / Tumia eneo langu",
     "location_status": "Location / Eneo",
     "submit": "Diagnose / Chunguza",
-    "transcript": "What we heard / Tuliyosikia",
-    "diagnosis": "Diagnosis / Uchunguzi",
     "reply_audio": "Spoken reply / Jibu la sauti",
     "dealers": "Nearby agro-dealers / Wauzaji wa pembejeo",
     "disclaimer": (
