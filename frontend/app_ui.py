@@ -12,9 +12,10 @@ from frontend.strings import LANGUAGE_CHOICES, UI
 
 APP_CSS = """
 .gradio-container {
+    color: #123d25 !important;
     background:
-        radial-gradient(circle at 15% 0%, rgba(214, 244, 220, .75), transparent 32rem),
-        linear-gradient(180deg, #fbfdf9 0%, #f4f8f1 100%);
+        radial-gradient(circle at 15% 0%, rgba(174, 224, 185, .82), transparent 32rem),
+        linear-gradient(180deg, #eff9f0 0%, #dcefdc 100%);
 }
 .app-shell { max-width: 900px; margin: 0 auto; }
 .top-tools {
@@ -35,6 +36,9 @@ APP_CSS = """
     min-height: 32px !important;
     padding: 0 !important;
     font-size: 1rem !important;
+    color: #14532d !important;
+    border-color: #86b98f !important;
+    background: #d9f0dd !important;
 }
 .brand-copy h1 {
     margin-bottom: .15rem;
@@ -62,52 +66,61 @@ APP_CSS = """
 .language-picker input {
     padding: 4px 30px 4px 9px !important;
     font-size: .82rem !important;
+    color: #174b2b !important;
+    border-color: #86b98f !important;
+    background: #e4f4e6 !important;
 }
 .response-card {
     margin-top: 8px;
     padding: 18px !important;
-    border: 1px solid #dce9dc !important;
+    border: 1px solid #91bd98 !important;
     border-radius: 22px !important;
     box-shadow: 0 16px 44px rgba(32, 74, 48, .08);
-    background: rgba(255, 255, 255, .88) !important;
+    background: rgba(226, 244, 229, .94) !important;
 }
 .response-card .prose {
     max-width: none !important;
 }
 .response-audio {
     margin-top: 12px;
-    border-top: 1px solid #e4ece4;
+    border-top: 1px solid #9bc5a2;
     padding-top: 12px;
 }
 .composer {
     margin-top: 12px;
     padding: 12px !important;
-    border: 1px solid #262626 !important;
+    border: 1px solid #2f7745 !important;
     border-radius: 20px !important;
-    background: #111111 !important;
+    background: #174b2b !important;
     box-shadow: 0 12px 34px rgba(32, 74, 48, .10);
 }
 .composer > div,
 .prompt-row,
 .prompt-row > div {
-    background-color: #111111 !important;
+    background-color: #174b2b !important;
 }
 .composer-text textarea {
     min-height: 72px !important;
     border: 0 !important;
     box-shadow: none !important;
     font-size: 1rem !important;
-    color: #f8fafc !important;
-    background-color: #111111 !important;
+    color: #e5f5e8 !important;
+    background-color: #174b2b !important;
 }
 .composer-text textarea::placeholder {
-    color: #9ca3af !important;
+    color: #a8d5b0 !important;
 }
 .composer-action {
     flex: 0 0 142px !important;
     min-width: 142px !important;
     max-width: 142px !important;
     padding-inline: 10px !important;
+    color: #e8f7eb !important;
+    border-color: #4d9b62 !important;
+    background: #2f7d48 !important;
+}
+.composer-action:hover {
+    background: #3d9257 !important;
 }
 .prompt-row { align-items: stretch !important; }
 .prompt-row .composer-action {
@@ -120,13 +133,38 @@ APP_CSS = """
     min-height: 58px !important;
     margin-top: 8px;
     padding: 6px !important;
-    border-color: transparent !important;
-    background-color: transparent !important;
+    color: #174b2b !important;
+    border-color: #86b98f !important;
+    background-color: #d9f0dd !important;
     box-shadow: none !important;
 }
 .record-control button {
-    color: #dc2626 !important;
-    background-color: transparent !important;
+    color: #1d6b38 !important;
+    background-color: #d9f0dd !important;
+}
+.record-control > div,
+.record-control > div > div,
+.record-control [class*="container"],
+.record-control [class*="waveform"],
+.response-audio > div,
+.response-audio > div > div,
+.secondary-details button {
+    color: #174b2b !important;
+    border-color: #91bd98 !important;
+    background-color: #e4f4e6 !important;
+}
+.secondary-details,
+.secondary-details > div,
+.secondary-details > div > div,
+.secondary-details [class*="wrap"],
+.secondary-details [class*="container"] {
+    color: #174b2b !important;
+    border-color: #91bd98 !important;
+    background: #e4f4e6 !important;
+}
+.record-control input[type="range"],
+.response-audio input[type="range"] {
+    accent-color: #2f7d48 !important;
 }
 .photo-upload {
     flex: 0 0 50px !important;
@@ -141,18 +179,18 @@ APP_CSS = """
     padding: 8px !important;
     color: transparent !important;
     font-size: 0 !important;
-    background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJ8AAACUCAMAAAC6AgsRAAAAYFBMVEX///8AAADp6eng4OANDQ2qqqpRUVGamppKSkrU1NSkpKSIiIjNzc1CQkInJyf7+/v19fVkZGRfX1/FxcXa2tpqamo4ODh3d3e4uLh+fn4xMTEVFRWQkJBXV1e/v78dHR1euqxzAAAEaklEQVR4nO2a6ZKzKhBAFeOeBOKu0fj+b3lVXBG/qKGTqbp9fk05Mp4BGppF0xAEQRAEQRAEQRAEQRAEQZD/L8QwCP21xBbMzB+WFaT2y/i1igwzueicOnH8F/u1zxL20AWecWawv2JJAlGvI8nNMPoDjjSX6nU4aWlGPw6a67ZeyyWpUvOXQVP3geEREua3+1NuGXgR+0lFRlzg0fc08ipj6y6vyocXRuTbfiXvaLMWpCQ0fXnM6EVcmtevBg0X8YWnlERh6cgdkyou3W+1Nbm1n3xmst9Rei2t+iJzfNZO6X6jHsOurxXb3Yq6dlwl8ppMr+B+Hm+yf79ErmYZSx1t6HjxeUW8f7HpkN5jPfjEsIKET73S7reGMterxDYG7YUuH+oOVUJkplUy1aQN5dby4t84XC7K7HQYxSFb2N7b/dawa5+WiWOnMogZ8Dq4O7up/LApyUfnvvMWMHbuxvTwHnMICT541hGAHTPP2jXE/WzNumB+vgD07A/0dN3qY6KbvC87R6cjZB/p6XrA/0uo+jPq4UOXgwzlulHP7ea8Wn12zWc1/Z575kHKfv6wWimz0wWIX/6N25mGIf1yqu10PLetVNtpRvd3m6SPaoZnH6D9hyif2kqqsXRqaqXw6IjZMH/sx2kC1xxKR11uq6sf/njS18xL4UG9Ziqkmtv9EJChtPpUf/SLD/vdosmPV6SlXG/yuw2frSUqUu7XwY9RqO638ksJY+7Gonfbj/ESAGsQwc/rHtJd+cLMj/AHAHsfS7+gn0yv0pXkth8fBR4A6enSb8gvibi0eOPHu18JsFJf+pWD355onvwo736mej3BL++fGrcNp+csdEa/B+9+BcQSfemXuPOna9LsZY/jz+gX8+5XQayOhPgNuhDMNgaYvO1gY744+qW8+51aWh300xM/M+ONIbrfGBwm6ql9ednyzaeU+P2Dof36aJ38+EbrM/yt321MToxk6dfrgizO9/u5U6FQ5udA6G34SaaP2cqM8mxZ8Mu3P6LYr2ha8iWEsLco1R0zCX4wG5Rrv8TupinDmuuJU1eUrPxgNtdWfvkQBmR2mLTe2csugt8dRE/0S7LJZNr3SCR14wt+IKOz4Hfx5yJ0OO96SkeOe73wA9jZEPwu1mr5ZbR51l2+KiPFwg/oXG70KwpP0orET6pQk+d12dzPAdo6Hf1KeQWw7WM2ymZ+OdDe+Oh3Kved/Lz3L59CkR/ExmTH6HeK0c+B2NhtUeQXQx3NKPKDSQ40VX4Q+84cNX4bQ7gC1Pi9OZT9ADV+D6VOc9T4QewccNT4wV3aUeOnVGmBEj/1xwojSvygkgNtOCE4e3Og34tx3795Fl4DZ7fG+BovgTzW73vQqU/023AQ+6Yj/c2BOjPIQYZLBwlg846X6j6gPJnc7oOWH+rdgO81ra/sHgO0dTvBjQuI+4C/t9bE4calubcU6XcueRKvvdN+kCD1wdt2pmgchfyBG9sIgiAIgiAIgiAIgiAIgiDId/gPbr86JgahX/sAAAAASUVORK5CYII=") !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232f7d48' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='6' width='16' height='14' rx='2'/%3E%3Cpath d='M6 6l1-2h11a2 2 0 0 1 2 2v10'/%3E%3Ccircle cx='8' cy='10' r='1' fill='%232f7d48' stroke='none'/%3E%3Cpath d='m4 17 4-4 3 3 3-4 5 5'/%3E%3C/svg%3E") !important;
     background-position: center !important;
     background-repeat: no-repeat !important;
     background-size: 31px 29px !important;
-    background-color: transparent !important;
-    border-color: transparent !important;
+    background-color: #174b2b !important;
+    border-color: #2f7745 !important;
     box-shadow: none !important;
 }
 .photo-upload:hover,
 .photo-upload button:hover,
 .record-control:hover {
-    background-color: #262626 !important;
+    background-color: #286a3e !important;
 }
 .image-preview {
     width: 120px !important;
@@ -164,43 +202,70 @@ APP_CSS = """
     border-radius: 12px !important;
 }
 .secondary-details { margin-top: 10px; }
+.secondary-details,
+.secondary-details > div {
+    color: #174b2b !important;
+    border-color: #91bd98 !important;
+    background-color: #e4f4e6 !important;
+}
 .disclaimer {
-    color: #718078;
+    color: #4d7758;
     font-size: .82rem;
     text-align: center;
     padding: 14px 20px 4px;
 }
 .dark-mode .gradio-container {
-    color: #e5e7eb !important;
+    color: #d9f2de !important;
     background:
-        radial-gradient(circle at 15% 0%, rgba(31, 74, 50, .55), transparent 32rem),
-        linear-gradient(180deg, #0b100d 0%, #111713 100%) !important;
+        radial-gradient(circle at 15% 0%, rgba(45, 109, 65, .58), transparent 32rem),
+        linear-gradient(180deg, #082713 0%, #0d351b 100%) !important;
 }
 .dark-mode .brand-copy h1 { color: #d8f3df !important; }
 .dark-mode .brand-copy p,
-.dark-mode .disclaimer { color: #a5b5aa !important; }
+.dark-mode .disclaimer { color: #a8d5b0 !important; }
 .dark-mode .response-card,
 .dark-mode .record-control,
 .dark-mode .secondary-details,
 .dark-mode .secondary-details > div {
-    color: #e5e7eb !important;
-    border-color: #37463b !important;
-    background-color: #161d18 !important;
+    color: #d9f2de !important;
+    border-color: #3f8052 !important;
+    background-color: #123f22 !important;
 }
 .dark-mode .response-card table,
 .dark-mode .response-card th,
 .dark-mode .response-card td {
-    color: #e5e7eb !important;
-    border-color: #45574a !important;
+    color: #d9f2de !important;
+    border-color: #4d9060 !important;
 }
 .dark-mode .language-picker input,
 .dark-mode .language-picker > div,
 .dark-mode .theme-toggle {
-    color: #e5e7eb !important;
-    border-color: #45574a !important;
-    background-color: #161d18 !important;
+    color: #d9f2de !important;
+    border-color: #4d9060 !important;
+    background-color: #123f22 !important;
 }
-.dark-mode .response-audio { border-color: #37463b !important; }
+.dark-mode .response-audio { border-color: #3f8052 !important; }
+.dark-mode .record-control > div,
+.dark-mode .record-control > div > div,
+.dark-mode .record-control [class*="container"],
+.dark-mode .record-control [class*="waveform"],
+.dark-mode .record-control button,
+.dark-mode .response-audio > div,
+.dark-mode .response-audio > div > div,
+.dark-mode .secondary-details button {
+    color: #d9f2de !important;
+    border-color: #3f8052 !important;
+    background-color: #174b2b !important;
+}
+.dark-mode .secondary-details,
+.dark-mode .secondary-details > div,
+.dark-mode .secondary-details > div > div,
+.dark-mode .secondary-details [class*="wrap"],
+.dark-mode .secondary-details [class*="container"] {
+    color: #d9f2de !important;
+    border-color: #3f8052 !important;
+    background: #174b2b !important;
+}
 @media (max-width: 680px) {
     .gradio-container {
         padding-inline: 8px !important;
