@@ -1,7 +1,8 @@
-# AfriFarmAI NVIDIA Chat Test
+# AfriFarmAI
 
-A simple Gradio chat interface that sends each prompt to NVIDIA's
-OpenAI-compatible chat API and displays the model's final answer.
+A Gradio crop and livestock health assistant for Kenyan smallholder farmers.
+It diagnoses likely conditions, provides cautious treatment guidance, and
+searches Google Places for nearby agrovets when a disease is identified.
 
 ## Setup
 
@@ -12,19 +13,25 @@ python -m pip install -r requirements.txt
 cp .env.example .env
 ```
 
-Set the NVIDIA configuration in the project-root `.env` file:
+Set provider configuration in the project-root `.env` file:
 
 ```dotenv
 NVIDIA_API_KEY=your_nvidia_api_key
-NVIDIA_MODEL_NAME=nvidia/nemotron-3-nano-omni-30b-a3b-reasoning
-NVIDIA_BASE_URL=https://integrate.api.nvidia.com/v1
+GOOGLE_PLACES_API_KEY=your_server_side_google_places_key
 ```
 
-Run the interface:
+Enable Places API (New) for the Google key. The key is used only by backend
+requests and must never be placed in frontend JavaScript.
+
+Run the interface from the project virtual environment:
 
 ```bash
 source .venv/bin/activate
-python -m frontend.app_ui
+python app.py
 ```
 
 Open `http://localhost:7860`.
+
+The browser requests location permission automatically. If permission is
+denied, use the compact location icon beside the theme and language controls
+to retry.

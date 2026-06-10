@@ -32,7 +32,8 @@ APP_CSS = """
     padding: 0;
     gap: 6px !important;
 }
-.theme-toggle {
+.theme-toggle,
+.location-toggle {
     flex: 0 0 34px !important;
     min-width: 34px !important;
     width: 34px !important;
@@ -45,6 +46,9 @@ APP_CSS = """
     color: #14532d !important;
     border-color: #86b98f !important;
     background: #d9f0dd !important;
+}
+.location-toggle {
+    font-size: 1.15rem !important;
 }
 .brand-copy h1 {
     margin-bottom: .15rem;
@@ -142,6 +146,21 @@ APP_CSS = """
     border-top: 1px solid #9bc5a2;
     padding-top: 12px;
 }
+.dealer-pagination {
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    margin-top: 10px;
+}
+.dealer-pagination button {
+    flex: 0 0 auto !important;
+    min-width: 92px !important;
+}
+.dealer-page-label {
+    flex: 0 0 auto !important;
+    min-width: 92px !important;
+    text-align: center;
+}
 .composer {
     margin-top: 12px;
     padding: 12px !important;
@@ -203,20 +222,10 @@ APP_CSS = """
 .record-control [class*="container"],
 .record-control [class*="waveform"],
 .response-audio > div,
-.response-audio > div > div,
-.secondary-details button {
+.response-audio > div > div {
     color: #174b2b !important;
     border-color: #91bd98 !important;
     background-color: #e4f4e6 !important;
-}
-.secondary-details,
-.secondary-details > div,
-.secondary-details > div > div,
-.secondary-details [class*="wrap"],
-.secondary-details [class*="container"] {
-    color: #174b2b !important;
-    border-color: #91bd98 !important;
-    background: #e4f4e6 !important;
 }
 .record-control input[type="range"],
 .response-audio input[type="range"] {
@@ -290,13 +299,6 @@ APP_CSS = """
     border-radius: 12px !important;
 }
 .camera-capture { margin-top: 8px; }
-.secondary-details { margin-top: 10px; }
-.secondary-details,
-.secondary-details > div {
-    color: #174b2b !important;
-    border-color: #91bd98 !important;
-    background-color: #e4f4e6 !important;
-}
 .disclaimer {
     color: #4d7758;
     font-size: .82rem;
@@ -314,9 +316,7 @@ APP_CSS = """
 .dark-mode .disclaimer { color: #a8d5b0 !important; }
 .dark-mode .response-card,
 .dark-mode .user-card,
-.dark-mode .record-control,
-.dark-mode .secondary-details,
-.dark-mode .secondary-details > div {
+.dark-mode .record-control {
     color: #d9f2de !important;
     border-color: #3f8052 !important;
     background-color: #123f22 !important;
@@ -328,7 +328,8 @@ APP_CSS = """
     border-color: #4d9060 !important;
 }
 .dark-mode .language-picker input,
-.dark-mode .theme-toggle {
+.dark-mode .theme-toggle,
+.dark-mode .location-toggle {
     color: #d9f2de !important;
     border-color: #4d9060 !important;
     background-color: #123f22 !important;
@@ -349,20 +350,10 @@ APP_CSS = """
 .dark-mode .record-control [class*="waveform"],
 .dark-mode .record-control button,
 .dark-mode .response-audio > div,
-.dark-mode .response-audio > div > div,
-.dark-mode .secondary-details button {
+.dark-mode .response-audio > div > div {
     color: #d9f2de !important;
     border-color: #3f8052 !important;
     background-color: #174b2b !important;
-}
-.dark-mode .secondary-details,
-.dark-mode .secondary-details > div,
-.dark-mode .secondary-details > div > div,
-.dark-mode .secondary-details [class*="wrap"],
-.dark-mode .secondary-details [class*="container"] {
-    color: #d9f2de !important;
-    border-color: #3f8052 !important;
-    background: #174b2b !important;
 }
 @media (max-width: 680px) {
     .gradio-container {
@@ -454,11 +445,16 @@ _SEVERITY_MARKERS = {
     Severity.UNKNOWN: "Needs review",
 }
 
+_DEALERS_PER_PAGE = 5
+
 _RESPONSE_LABELS = {
     "sw": {
         "description": "Maelezo yako",
         "dealers": "Wauzaji wa pembejeo walio karibu",
         "no_dealers": "Hakuna wauzaji waliopendekezwa kwa jibu hili.",
+        "location_required": "Ruhusu eneo lako au bonyeza alama ya eneo juu ili kupata wauzaji wa karibu.",
+        "dealer_error": "Hatukuweza kutafuta wauzaji wa karibu kwa sasa. Jaribu tena baadaye.",
+        "searched_radius": "Tumetafuta hadi kilomita {radius}.",
         "escalate": "Tafadhali wasiliana na daktari wa mifugo au afisa wa ugani.",
         "low_confidence": "Uhakika ni mdogo: tafadhali tuma picha iliyo wazi au maelezo zaidi.",
     },
@@ -466,6 +462,9 @@ _RESPONSE_LABELS = {
         "description": "Wach mari",
         "dealers": "Jo-usumb gik pur machiegni",
         "no_dealers": "Onge ja-usumb ma oyier ne dwoko ni.",
+        "location_required": "Yie mondo wanwang kama intie kata di alama mar kama malo mondo wayud jo-usumb machiegni.",
+        "dealer_error": "Ok wanyal manyo jo-usumb machiegni sani. Tem kendo bang'e.",
+        "searched_radius": "Wase manyo nyaka kilomita {radius}.",
         "escalate": "Tim ber iwuoyo gi jadaktar mar jamni kata jatich mar pur.",
         "low_confidence": "Genruok en matin: tim ber ior picha maler kata wach mang'eny.",
     },
@@ -473,6 +472,9 @@ _RESPONSE_LABELS = {
         "description": "Your description",
         "dealers": "Nearby agro-dealers",
         "no_dealers": "No dealer suggestions for this result.",
+        "location_required": "Allow location access or click the location icon above to find nearby agrovets.",
+        "dealer_error": "Nearby agrovet search is unavailable right now. Please try again later.",
+        "searched_radius": "Searched up to {radius} km.",
         "escalate": "Please consult a vet or extension officer.",
         "low_confidence": "Low confidence: please send a clearer photo or more detail.",
     },
@@ -480,16 +482,14 @@ _RESPONSE_LABELS = {
 
 _GEO_JS = """
 () => {
-  return new Promise((resolve) => {
+    return new Promise((resolve) => {
     if (!navigator.geolocation) {
-      resolve([null, null, "Geolocation not supported on this device"]);
+      resolve([null, null]);
       return;
     }
     navigator.geolocation.getCurrentPosition(
-      (p) => resolve([p.coords.latitude, p.coords.longitude,
-                      "Location set (" + p.coords.latitude.toFixed(3) + ", "
-                      + p.coords.longitude.toFixed(3) + ")"]),
-      () => resolve([null, null, "Location unavailable or permission denied"]),
+      (p) => resolve([p.coords.latitude, p.coords.longitude]),
+      () => resolve([null, null]),
       { enableHighAccuracy: true, timeout: 10000 }
     );
   });
@@ -540,33 +540,95 @@ def _render_diagnosis(result: AnalyzeResult) -> str:
     return "\n".join(lines)
 
 
-def _render_dealers(result: AnalyzeResult) -> str:
+def _render_dealers(result: AnalyzeResult, page: int = 0) -> str:
     """Format the dealer list as Markdown, or a gentle empty-state."""
 
+    labels = _RESPONSE_LABELS[result.language]
+    if result.dealer_search_status == "location_required":
+        return f"_{labels['location_required']}_"
+    if result.dealer_search_status == "error":
+        return f"_{labels['dealer_error']}_"
     if not result.dealers:
-        return f"_{_RESPONSE_LABELS[result.language]['no_dealers']}_"
-    rows = ["| Dealer | Town | Phone | Specialties |", "|---|---|---|---|"]
-    for dealer in result.dealers:
-        distance = (
-            f" ({dealer.distance_km} km)" if dealer.distance_km is not None else ""
+        radius_note = (
+            " "
+            + labels["searched_radius"].format(
+                radius=result.dealer_search_radius_km
+            )
+            if result.dealer_search_radius_km
+            else ""
         )
+        return f"_{labels['no_dealers']}{radius_note}_"
+    rows = [
+        "| Agrovet | Address | Rating | Phone | Distance | Map |",
+        "|---|---|---:|---|---:|---|",
+    ]
+    start = max(page, 0) * _DEALERS_PER_PAGE
+    for dealer in result.dealers[start : start + _DEALERS_PER_PAGE]:
+        rating = f"{dealer.rating:.1f}" if dealer.rating is not None else "—"
+        phone = dealer.phone or "—"
         rows.append(
-            f"| {dealer.name}{distance} | {dealer.town} | "
-            f"{dealer.phone} | {dealer.specialties} |"
+            f"| {dealer.name} | {dealer.address} | {rating} | {phone} | "
+            f"{dealer.distance_km:.1f} km | [Open map]({dealer.maps_link}) |"
         )
     return "\n".join(rows)
 
 
-def _render_response(result: AnalyzeResult) -> str:
+def _render_response(result: AnalyzeResult, dealer_page: int = 0) -> str:
     """Combine the diagnosis and dealer guidance into one response."""
 
     labels = _RESPONSE_LABELS[result.language]
     return "\n\n".join(
         [
             _render_diagnosis(result),
-            f"### {labels['dealers']}\n{_render_dealers(result)}",
+            f"### {labels['dealers']}\n{_render_dealers(result, dealer_page)}",
         ]
     )
+
+
+def _dealer_pagination_updates(result: AnalyzeResult, page: int = 0):
+    """Return normalized page state and Gradio updates for dealer navigation."""
+
+    total_pages = max(
+        1,
+        (len(result.dealers) + _DEALERS_PER_PAGE - 1) // _DEALERS_PER_PAGE,
+    )
+    normalized_page = min(max(page, 0), total_pages - 1)
+    visible = total_pages > 1
+    return (
+        normalized_page,
+        gr.update(visible=visible),
+        gr.update(interactive=normalized_page > 0),
+        gr.update(interactive=normalized_page < total_pages - 1),
+        f"Page {normalized_page + 1} of {total_pages}" if visible else "",
+    )
+
+
+def _change_dealer_page(
+    result: Optional[AnalyzeResult],
+    current_page: int,
+    step: int,
+):
+    """Render another page from the existing search result without a new lookup."""
+
+    if result is None:
+        return "", 0, gr.update(visible=False), gr.update(), gr.update(), ""
+    page, pager, previous, next_button, label = _dealer_pagination_updates(
+        result,
+        current_page + step,
+    )
+    return _render_response(result, page), page, pager, previous, next_button, label
+
+
+def _previous_dealer_page(result: Optional[AnalyzeResult], current_page: int):
+    """Render the previous dealer page."""
+
+    return _change_dealer_page(result, current_page, -1)
+
+
+def _next_dealer_page(result: Optional[AnalyzeResult], current_page: int):
+    """Render the next dealer page."""
+
+    return _change_dealer_page(result, current_page, 1)
 
 
 def _on_submit(
@@ -574,7 +636,6 @@ def _on_submit(
     audio_path: Optional[str],
     image_path: Optional[str],
     text: Optional[str],
-    county: Optional[str],
     lat: Optional[float],
     lon: Optional[float],
 ):
@@ -585,11 +646,11 @@ def _on_submit(
         audio_path=audio_path,
         image_path=image_path,
         text=text,
-        county=county or None,
         lat=lat,
         lon=lon,
     )
     result = analyze(request)
+    page, pager, previous, next_button, page_label = _dealer_pagination_updates(result)
     submitted_text = (
         (text or "").strip()
         or (result.transcript or "").strip()
@@ -603,6 +664,12 @@ def _on_submit(
         "",
         None,
         gr.update(value=None, visible=False),
+        result,
+        page,
+        pager,
+        previous,
+        next_button,
+        page_label,
     )
 
 
@@ -621,6 +688,15 @@ def _captured_image_state(path: Optional[str]):
     )
 
 
+def _show_analysis_loading():
+    """Show an honest loading state while diagnosis and agrovet search run."""
+
+    return (
+        gr.update(visible=True),
+        "Analyzing the symptoms and searching for nearby agrovets...",
+    )
+
+
 def build_ui() -> gr.Blocks:
     """Construct the centered chat interface."""
 
@@ -631,6 +707,12 @@ def build_ui() -> gr.Blocks:
                 size="sm",
                 min_width=34,
                 elem_classes=["theme-toggle"],
+            )
+            locate = gr.Button(
+                "\u2316",
+                size="sm",
+                min_width=34,
+                elem_classes=["location-toggle"],
             )
             language = gr.Dropdown(
                 choices=LANGUAGE_CHOICES,
@@ -667,6 +749,16 @@ def build_ui() -> gr.Blocks:
                     label=None,
                     show_label=False,
                 )
+                with gr.Row(
+                    visible=False,
+                    elem_classes=["dealer-pagination"],
+                ) as dealer_pager:
+                    previous_dealers = gr.Button("Previous", size="sm")
+                    dealer_page_label = gr.Markdown(
+                        value="",
+                        elem_classes=["dealer-page-label"],
+                    )
+                    next_dealers = gr.Button("Next", size="sm")
                 audio_out = gr.Audio(
                     label=UI["reply_audio"],
                     autoplay=False,
@@ -745,21 +837,14 @@ def build_ui() -> gr.Blocks:
                 elem_classes=["record-control"],
             )
 
-            with gr.Accordion(
-                UI["more_options"], open=False, elem_classes=["secondary-details"]
-            ):
-                county = gr.Textbox(label=UI["county"], placeholder="e.g. Kisumu")
-                with gr.Row():
-                    locate = gr.Button(UI["use_location"], size="sm")
-                    loc_status = gr.Textbox(
-                        label=UI["location_status"], interactive=False, scale=2
-                    )
-
             lat = gr.Number(visible=False)
             lon = gr.Number(visible=False)
+            result_state = gr.State(value=None)
+            dealer_page_state = gr.State(value=0)
             gr.HTML(f"<div class='disclaimer'>{UI['disclaimer']}</div>")
 
-        locate.click(fn=None, inputs=None, outputs=[lat, lon, loc_status], js=_GEO_JS)
+        demo.load(fn=None, inputs=None, outputs=[lat, lon], js=_GEO_JS)
+        locate.click(fn=None, inputs=None, outputs=[lat, lon], js=_GEO_JS)
         theme.click(fn=None, outputs=theme, js=_THEME_JS, queue=False)
         photo_menu.click(
             lambda: gr.update(visible=True),
@@ -799,8 +884,12 @@ def build_ui() -> gr.Blocks:
             queue=False,
         )
         submit.click(
+            _show_analysis_loading,
+            outputs=[response_card, response_text],
+            show_progress="hidden",
+        ).then(
             _on_submit,
-            inputs=[language, audio, selected_image, text, county, lat, lon],
+            inputs=[language, audio, selected_image, text, lat, lon],
             outputs=[
                 response_text,
                 audio_out,
@@ -809,6 +898,12 @@ def build_ui() -> gr.Blocks:
                 text,
                 audio,
                 selected_image,
+                result_state,
+                dealer_page_state,
+                dealer_pager,
+                previous_dealers,
+                next_dealers,
+                dealer_page_label,
             ],
         ).then(
             lambda: (
@@ -820,8 +915,12 @@ def build_ui() -> gr.Blocks:
             outputs=[user_card, response_card, photo_actions, camera_capture],
         )
         text.submit(
+            _show_analysis_loading,
+            outputs=[response_card, response_text],
+            show_progress="hidden",
+        ).then(
             _on_submit,
-            inputs=[language, audio, selected_image, text, county, lat, lon],
+            inputs=[language, audio, selected_image, text, lat, lon],
             outputs=[
                 response_text,
                 audio_out,
@@ -830,6 +929,12 @@ def build_ui() -> gr.Blocks:
                 text,
                 audio,
                 selected_image,
+                result_state,
+                dealer_page_state,
+                dealer_pager,
+                previous_dealers,
+                next_dealers,
+                dealer_page_label,
             ],
         ).then(
             lambda: (
@@ -839,6 +944,32 @@ def build_ui() -> gr.Blocks:
                 gr.update(visible=False),
             ),
             outputs=[user_card, response_card, photo_actions, camera_capture],
+        )
+        previous_dealers.click(
+            _previous_dealer_page,
+            inputs=[result_state, dealer_page_state],
+            outputs=[
+                response_text,
+                dealer_page_state,
+                dealer_pager,
+                previous_dealers,
+                next_dealers,
+                dealer_page_label,
+            ],
+            show_progress="hidden",
+        )
+        next_dealers.click(
+            _next_dealer_page,
+            inputs=[result_state, dealer_page_state],
+            outputs=[
+                response_text,
+                dealer_page_state,
+                dealer_pager,
+                previous_dealers,
+                next_dealers,
+                dealer_page_label,
+            ],
+            show_progress="hidden",
         )
 
     return demo

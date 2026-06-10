@@ -35,28 +35,31 @@ class AnalyzeRequest(BaseModel):
     text: Optional[str] = None
     audio_path: Optional[str] = None
     image_path: Optional[str] = None
-    county: Optional[str] = Field(
-        default=None, description="Kenyan county used for dealer lookup."
-    )
     lat: Optional[float] = Field(
-        default=None, description="Farmer GPS latitude for nearest-dealer ranking."
+        default=None,
+        ge=-90,
+        le=90,
+        description="Farmer GPS latitude for nearest-dealer ranking.",
     )
     lon: Optional[float] = Field(
-        default=None, description="Farmer GPS longitude for nearest-dealer ranking."
+        default=None,
+        ge=-180,
+        le=180,
+        description="Farmer GPS longitude for nearest-dealer ranking.",
     )
 
 
 class Dealer(BaseModel):
-    """An approved agro-dealer surfaced to the farmer."""
+    """A nearby agrovet or agricultural supplier returned by Google Places."""
 
     name: str
-    county: str
-    town: str
-    phone: str
-    specialties: str
-    lat: Optional[float] = None
-    lon: Optional[float] = None
-    distance_km: Optional[float] = None
+    address: str
+    rating: Optional[float] = Field(default=None, ge=0, le=5)
+    phone: Optional[str] = None
+    lat: float = Field(ge=-90, le=90)
+    lon: float = Field(ge=-180, le=180)
+    distance_km: float = Field(ge=0)
+    maps_link: str
 
 
 class Diagnosis(BaseModel):
@@ -82,4 +85,8 @@ class AnalyzeResult(BaseModel):
     localized_message: str
     audio_reply_path: Optional[str] = None
     dealers: list[Dealer] = Field(default_factory=list)
+    dealer_search_status: Literal[
+        "not_requested", "location_required", "success", "no_results", "error"
+    ] = "not_requested"
+    dealer_search_radius_km: Optional[int] = None
     low_confidence: bool = False
