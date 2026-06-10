@@ -1,18 +1,42 @@
-# --- Core runtime (required to run the app with stubs) ---
-gradio==6.17.3        # if a Spaces build rejects this, drop to latest 5.x
-pydantic==2.9.2
+# # --- Core runtime (required to run the app with stubs) ---
+# gradio==6.17.3        # if a Spaces build rejects this, drop to latest 5.x
+# pydantic==2.9.2
+# python-dotenv==1.0.1
+# requests==2.32.3
+# gTTS==2.5.3            # lightweight TTS fallback for the voice reply
+# edge-tts==7.2.8        # Kenyan Swahili/English neural voices
+
+# # --- Real-model integration ---
+# cohere==7.0.3           # Tiny Aya translation + localization (hosted Chat API)
+# huggingface_hub==1.16.1 # HF Inference ASR (Whisper/MMS) for speech-to-text
+# openai==2.41.0          # NVIDIA OpenAI-compatible chat client
+
+# # --- Test tooling ---
+# pytest==9.0.3
+# # transformers==4.46.0  # uncomment for local ASR / MMS-TTS
+# # torch==2.4.1
+# # accelerate==1.0.1
+
+
+# === Core for HF Spaces ===
+gradio>=5.12.0,<6.0.0
+pydantic>=2.0
+
+# === Other dependencies ===
 python-dotenv==1.0.1
 requests==2.32.3
-gTTS==2.5.3            # lightweight TTS fallback for the voice reply
-edge-tts==7.2.8        # Kenyan Swahili/English neural voices
+gTTS==2.5.3
+edge-tts==7.2.8
 
-# --- Real-model integration ---
-cohere==7.0.3           # Tiny Aya translation + localization (hosted Chat API)
-huggingface_hub==1.16.1 # HF Inference ASR (Whisper/MMS) for speech-to-text
-openai==2.41.0          # NVIDIA OpenAI-compatible chat client
+# === Model / API clients ===
+cohere==7.0.3
+huggingface-hub==1.16.1
+openai==2.41.0
 
-# --- Test tooling ---
+# === Testing ===
 pytest==9.0.3
-# transformers==4.46.0  # uncomment for local ASR / MMS-TTS
+
+# Optional / commented out (uncomment only if needed)
+# transformers==4.46.0
 # torch==2.4.1
 # accelerate==1.0.1
