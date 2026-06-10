@@ -23,8 +23,12 @@ APP_CSS = """
     top: 16px;
     right: 22px;
     z-index: 20;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
     width: auto !important;
     min-width: 0 !important;
+    height: 32px !important;
+    min-height: 32px !important;
     padding: 0;
     gap: 6px !important;
 }
@@ -34,6 +38,8 @@ APP_CSS = """
     width: 34px !important;
     height: 32px !important;
     min-height: 32px !important;
+    max-height: 32px !important;
+    margin: 0 !important;
     padding: 0 !important;
     font-size: 1rem !important;
     color: #14532d !important;
@@ -53,22 +59,52 @@ APP_CSS = """
     min-height: 32px !important;
     height: 32px !important;
     max-height: 32px !important;
-    align-self: flex-start;
-    margin-left: auto;
+    align-self: center !important;
+    margin: 0 !important;
+    padding: 0 !important;
     overflow: visible !important;
 }
 .language-picker > div,
+.language-picker .wrap,
+.language-picker .secondary-wrap,
+.language-picker [role="combobox"],
 .language-picker input {
     min-height: 32px !important;
     height: 32px !important;
     max-height: 32px !important;
+    margin: 0 !important;
+    padding-block: 0 !important;
+}
+.language-picker .wrap,
+.language-picker .secondary-wrap {
+    align-items: center !important;
+}
+.language-picker,
+.language-picker > div,
+.language-picker .wrap,
+.language-picker .secondary-wrap {
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
 }
 .language-picker input {
-    padding: 4px 30px 4px 9px !important;
+    padding-inline: 9px 30px !important;
     font-size: .82rem !important;
+    line-height: 32px !important;
     color: #174b2b !important;
-    border-color: #86b98f !important;
+    border: 1px solid #86b98f !important;
+    border-radius: 8px !important;
     background: #e4f4e6 !important;
+    box-shadow: none !important;
+}
+.language-picker button {
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+.language-picker svg {
+    max-height: 24px !important;
 }
 .response-card {
     margin-top: 8px;
@@ -77,6 +113,26 @@ APP_CSS = """
     border-radius: 22px !important;
     box-shadow: 0 16px 44px rgba(32, 74, 48, .08);
     background: rgba(226, 244, 229, .94) !important;
+}
+.user-card {
+    margin: 12px 0 8px auto !important;
+    max-width: 72%;
+    padding: 12px !important;
+    border: 1px solid #2f7745 !important;
+    border-radius: 18px !important;
+    background: #174b2b !important;
+}
+.user-card .prose { color: #e5f5e8 !important; }
+.user-message-stack {
+    gap: 8px !important;
+}
+.user-message-image {
+    width: min(100%, 280px) !important;
+    max-width: 280px !important;
+}
+.user-message-image img {
+    object-fit: cover !important;
+    border-radius: 12px !important;
 }
 .response-card .prose {
     max-width: none !important;
@@ -166,14 +222,14 @@ APP_CSS = """
 .response-audio input[type="range"] {
     accent-color: #2f7d48 !important;
 }
-.photo-upload {
+.photo-menu-trigger {
     flex: 0 0 50px !important;
     min-width: 50px !important;
     max-width: 50px !important;
     align-self: stretch;
 }
-.photo-upload,
-.photo-upload button {
+.photo-menu-trigger,
+.photo-menu-trigger button {
     min-width: 50px !important;
     min-height: 72px !important;
     padding: 8px !important;
@@ -187,20 +243,53 @@ APP_CSS = """
     border-color: #2f7745 !important;
     box-shadow: none !important;
 }
-.photo-upload:hover,
-.photo-upload button:hover,
+.photo-menu-trigger:hover,
+.photo-menu-trigger button:hover,
 .record-control:hover {
     background-color: #286a3e !important;
 }
-.image-preview {
+.photo-actions {
+    width: auto !important;
+    min-width: 0 !important;
+    margin: 6px 0 0 0 !important;
+    gap: 6px !important;
+}
+.photo-action {
+    flex: 0 0 42px !important;
+    width: 42px !important;
+    min-width: 42px !important;
+    max-width: 42px !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    padding: 0 !important;
+    color: transparent !important;
+    font-size: 0 !important;
+    border: 1px solid #4d9b62 !important;
+    border-radius: 10px !important;
+    background-color: #24663a !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+    background-size: 22px 22px !important;
+    box-shadow: none !important;
+}
+.photo-upload-action,
+.photo-upload-action button {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d9f2de' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 16V4m0 0L7 9m5-5 5 5'/%3E%3Cpath d='M5 14v5h14v-5'/%3E%3C/svg%3E") !important;
+}
+.photo-camera-action {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d9f2de' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 7h4l2-3h4l2 3h4v12H4z'/%3E%3Ccircle cx='12' cy='13' r='4'/%3E%3C/svg%3E") !important;
+}
+.selected-image {
     width: 120px !important;
     max-width: 120px !important;
     margin-top: 8px;
 }
-.image-preview img {
+.selected-image img,
+.camera-capture img {
     object-fit: cover !important;
     border-radius: 12px !important;
 }
+.camera-capture { margin-top: 8px; }
 .secondary-details { margin-top: 10px; }
 .secondary-details,
 .secondary-details > div {
@@ -224,6 +313,7 @@ APP_CSS = """
 .dark-mode .brand-copy p,
 .dark-mode .disclaimer { color: #a8d5b0 !important; }
 .dark-mode .response-card,
+.dark-mode .user-card,
 .dark-mode .record-control,
 .dark-mode .secondary-details,
 .dark-mode .secondary-details > div {
@@ -238,11 +328,19 @@ APP_CSS = """
     border-color: #4d9060 !important;
 }
 .dark-mode .language-picker input,
-.dark-mode .language-picker > div,
 .dark-mode .theme-toggle {
     color: #d9f2de !important;
     border-color: #4d9060 !important;
     background-color: #123f22 !important;
+}
+.dark-mode .language-picker,
+.dark-mode .language-picker > div,
+.dark-mode .language-picker .wrap,
+.dark-mode .language-picker .secondary-wrap,
+.dark-mode .language-picker button {
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
 }
 .dark-mode .response-audio { border-color: #3f8052 !important; }
 .dark-mode .record-control > div,
@@ -292,6 +390,9 @@ APP_CSS = """
     .composer {
         padding: 8px !important;
         border-radius: 16px !important;
+    }
+    .user-card {
+        max-width: 92%;
     }
     .prompt-row {
         display: flex !important;
@@ -460,10 +561,8 @@ def _render_response(result: AnalyzeResult) -> str:
     """Combine the diagnosis and dealer guidance into one response."""
 
     labels = _RESPONSE_LABELS[result.language]
-    transcript = result.transcript or "_Photo or voice message submitted._"
     return "\n\n".join(
         [
-            f"**{labels['description']}:** {transcript}",
             _render_diagnosis(result),
             f"### {labels['dealers']}\n{_render_dealers(result)}",
         ]
@@ -491,12 +590,19 @@ def _on_submit(
         lon=lon,
     )
     result = analyze(request)
+    submitted_text = (
+        (text or "").strip()
+        or (result.transcript or "").strip()
+        or "Photo submitted."
+    )
     return (
         _render_response(result),
         result.audio_reply_path,
+        submitted_text,
+        gr.update(value=image_path, visible=bool(image_path)),
         "",
         None,
-        None,
+        gr.update(value=None, visible=False),
     )
 
 
@@ -504,6 +610,15 @@ def _diagnose_button_state(text: Optional[str]):
     """Enable diagnosis only when the symptom description contains text."""
 
     return gr.update(interactive=bool(text and text.strip()))
+
+
+def _captured_image_state(path: Optional[str]):
+    """Preserve a captured photo in the composer preview."""
+
+    return (
+        gr.update(value=path, visible=bool(path)),
+        gr.update(visible=False),
+    )
 
 
 def build_ui() -> gr.Blocks:
@@ -533,6 +648,19 @@ def build_ui() -> gr.Blocks:
                 f"<p>{UI['subtitle']}</p></div>"
             )
 
+            with gr.Group(visible=False, elem_classes=["user-card"]) as user_card:
+                with gr.Column(elem_classes=["user-message-stack"]):
+                    user_text = gr.Markdown(value="")
+                    user_image = gr.Image(
+                        type="filepath",
+                        show_label=False,
+                        container=False,
+                        interactive=False,
+                        visible=False,
+                        buttons=[],
+                        elem_classes=["user-message-image"],
+                    )
+
             with gr.Group(visible=False, elem_classes=["response-card"]) as response_card:
                 response_text = gr.Markdown(
                     value="",
@@ -547,13 +675,11 @@ def build_ui() -> gr.Blocks:
 
             with gr.Group(elem_classes=["composer"]):
                 with gr.Row(equal_height=True, elem_classes=["prompt-row"]):
-                    image = gr.UploadButton(
+                    photo_menu = gr.Button(
                         UI["photo_icon"],
-                        file_types=["image"],
-                        type="filepath",
                         scale=0,
                         min_width=50,
-                        elem_classes=["photo-upload"],
+                        elem_classes=["photo-menu-trigger"],
                     )
                     text = gr.Textbox(
                         lines=2,
@@ -572,16 +698,40 @@ def build_ui() -> gr.Blocks:
                         min_width=142,
                         elem_classes=["composer-action"],
                     )
-                image_preview = gr.Image(
+                with gr.Row(visible=False, elem_classes=["photo-actions"]) as photo_actions:
+                    upload_image = gr.UploadButton(
+                        "Upload image",
+                        file_types=["image"],
+                        type="filepath",
+                        size="sm",
+                        scale=0,
+                        min_width=42,
+                        elem_classes=["photo-action", "photo-upload-action"],
+                    )
+                    camera_button = gr.Button(
+                        "Take photo",
+                        size="sm",
+                        scale=0,
+                        min_width=42,
+                        elem_classes=["photo-action", "photo-camera-action"],
+                    )
+                selected_image = gr.Image(
                     type="filepath",
                     show_label=False,
                     container=False,
                     interactive=False,
                     visible=False,
-                    height=105,
-                    width=120,
                     buttons=[],
-                    elem_classes=["image-preview"],
+                    elem_classes=["selected-image"],
+                )
+                camera_capture = gr.Image(
+                    sources=["webcam"],
+                    type="filepath",
+                    label=UI["image"],
+                    interactive=True,
+                    visible=False,
+                    buttons=[],
+                    elem_classes=["camera-capture"],
                 )
 
             audio = gr.Audio(
@@ -611,6 +761,36 @@ def build_ui() -> gr.Blocks:
 
         locate.click(fn=None, inputs=None, outputs=[lat, lon, loc_status], js=_GEO_JS)
         theme.click(fn=None, outputs=theme, js=_THEME_JS, queue=False)
+        photo_menu.click(
+            lambda: gr.update(visible=True),
+            outputs=photo_actions,
+            show_progress="hidden",
+            queue=False,
+        )
+        upload_image.upload(
+            lambda path: (
+                gr.update(value=path, visible=True),
+                gr.update(visible=False),
+            ),
+            inputs=upload_image,
+            outputs=[selected_image, photo_actions],
+            show_progress="hidden",
+        )
+        camera_button.click(
+            lambda: (
+                gr.update(value=None, visible=True),
+                gr.update(visible=False),
+            ),
+            outputs=[camera_capture, photo_actions],
+            show_progress="hidden",
+            queue=False,
+        )
+        camera_capture.input(
+            _captured_image_state,
+            inputs=camera_capture,
+            outputs=[selected_image, camera_capture],
+            show_progress="hidden",
+        )
         text.change(
             _diagnose_button_state,
             inputs=text,
@@ -618,35 +798,47 @@ def build_ui() -> gr.Blocks:
             show_progress="hidden",
             queue=False,
         )
-        image.upload(
-            lambda path: (path, gr.update(visible=True)),
-            inputs=image,
-            outputs=[image_preview, image_preview],
-            show_progress="hidden",
-        )
         submit.click(
             _on_submit,
-            inputs=[language, audio, image, text, county, lat, lon],
-            outputs=[response_text, audio_out, text, audio, image],
+            inputs=[language, audio, selected_image, text, county, lat, lon],
+            outputs=[
+                response_text,
+                audio_out,
+                user_text,
+                user_image,
+                text,
+                audio,
+                selected_image,
+            ],
         ).then(
             lambda: (
                 gr.update(visible=True),
-                None,
+                gr.update(visible=True),
+                gr.update(visible=False),
                 gr.update(visible=False),
             ),
-            outputs=[response_card, image_preview, image_preview],
+            outputs=[user_card, response_card, photo_actions, camera_capture],
         )
         text.submit(
             _on_submit,
-            inputs=[language, audio, image, text, county, lat, lon],
-            outputs=[response_text, audio_out, text, audio, image],
+            inputs=[language, audio, selected_image, text, county, lat, lon],
+            outputs=[
+                response_text,
+                audio_out,
+                user_text,
+                user_image,
+                text,
+                audio,
+                selected_image,
+            ],
         ).then(
             lambda: (
                 gr.update(visible=True),
-                None,
+                gr.update(visible=True),
+                gr.update(visible=False),
                 gr.update(visible=False),
             ),
-            outputs=[response_card, image_preview, image_preview],
+            outputs=[user_card, response_card, photo_actions, camera_capture],
         )
 
     return demo
