@@ -16,14 +16,10 @@ UI = {
         "Hello! Describe what you see on your crop or animal. "
         "You can type, record a voice note, or attach a photo."
     ),
-    "county": "County (for dealers) / Kaunti",
-    "more_options": "Location and dealer options",
     "response_details": "Spoken reply and nearby dealers",
-    "use_location": "Use my location / Tumia eneo langu",
-    "location_status": "Location / Eneo",
     "submit": "Diagnose / Chunguza",
     "reply_audio": "Spoken reply / Jibu la sauti",
-    "dealers": "Nearby agro-dealers / Wauzaji wa pembejeo",
+    "dealers": "Nearby agrovets / Wauzaji wa pembejeo",
     "disclaimer": (
         "This is decision support, not a substitute for a vet or agronomist. "
         "For severe or worsening cases, contact a professional."

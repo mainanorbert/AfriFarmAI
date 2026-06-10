@@ -8,11 +8,11 @@ list. Provider failures surface as honest notices to the farmer.
 from __future__ import annotations
 
 from backend.core.errors import ProviderError
+from backend.core.geolocation import resolve_location
 from backend.core.logging_utils import get_logger
 from backend.core.models import AnalyzeRequest, AnalyzeResult, Diagnosis, Severity, Subject
 from backend.core.safety import apply_safety
-from backend.services import dealers as dealers_service
-from backend.services import nemotron_client, stt_client, tiny_aya_client, tts_client
+from backend.services import google_places, nemotron_client, stt_client, tiny_aya_client, tts_client
 
 log = get_logger("core.orchestration")
 
@@ -92,21 +92,38 @@ def analyze(req: AnalyzeRequest) -> AnalyzeResult:
     # 4) Safety gating (low-confidence fallback, escalation flags).
     diagnosis, low_confidence = apply_safety(raw)
 
-    # 5) Localize to the farmer's language (degrades to English on failure).
+    # 5) Required nearby-agrovet tool call for a usable diagnosis using browser GPS.
+    found = []
+    dealer_status = "not_requested"
+    dealer_radius = None
+    disease_identified = (
+        not low_confidence
+        and diagnosis.subject != Subject.UNKNOWN
+        and diagnosis.condition.strip().lower() not in {"", "unclear", "unknown"}
+    )
+    if disease_identified:
+        try:
+            location = resolve_location(req.lat, req.lon)
+            if location is None:
+                dealer_status = "location_required"
+            else:
+                found, dealer_radius = google_places.search_nearby_agrovets(*location)
+                dealer_status = "success" if found else "no_results"
+        except ProviderError:
+            dealer_status = "error"
+            log.warning("analyze op=agrovet_search ok=0")
+
+    # 6) Localize to the farmer's language (degrades to English on failure).
     message = tiny_aya_client.localize(diagnosis, req.language)
 
-    # 6) Spoken reply.
+    # 7) Spoken reply.
     audio_reply = tts_client.synthesize(message, req.language)
 
-    # 7) Nearby dealers (only when we have a usable diagnosis). GPS coordinates,
-    #    when shared, rank dealers by real distance from the farmer.
-    found = (
-        []
-        if low_confidence
-        else dealers_service.find_nearby(county=req.county, lat=req.lat, lon=req.lon)
+    log.info(
+        "analyze op=pipeline path=full low=%s dealer_status=%s",
+        low_confidence,
+        dealer_status,
     )
-
-    log.info("analyze op=pipeline path=full low=%s", low_confidence)
     return AnalyzeResult(
         transcript=transcript,
         language=req.language,
@@ -114,5 +131,7 @@ def analyze(req: AnalyzeRequest) -> AnalyzeResult:
         localized_message=message,
         audio_reply_path=audio_reply,
         dealers=found,
+        dealer_search_status=dealer_status,
+        dealer_search_radius_km=dealer_radius,
         low_confidence=low_confidence,
     )

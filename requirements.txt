@@ -9,6 +9,10 @@ edge-tts==7.2.8        # Kenyan Swahili/English neural voices
 # --- Real-model integration ---
 cohere==7.0.3           # Tiny Aya translation + localization (hosted Chat API)
 huggingface_hub==1.16.1 # HF Inference ASR (Whisper/MMS) for speech-to-text
+openai==2.41.0          # NVIDIA OpenAI-compatible chat client
+
+# --- Test tooling ---
+pytest==9.0.3
 # transformers==4.46.0  # uncomment for local ASR / MMS-TTS
 # torch==2.4.1
 # accelerate==1.0.1

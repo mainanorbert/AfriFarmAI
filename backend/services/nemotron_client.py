@@ -42,7 +42,9 @@ _SYSTEM_PROMPT = (
     "animal — do not diagnose a condition of a different species.\n"
     "Be cautious. If the input is unclear or you are unsure, use low "
     "confidence and \"unknown\" fields. Never recommend banned or unsafe "
-    "chemicals."
+    "chemicals. When a disease is confidently identified, the application "
+    "must run its required nearby-agrovet search tool before presenting the "
+    "final response; never invent dealer names or contact details."
 )
 
 def diagnose(symptom_text: str, image_path: Optional[str] = None) -> Diagnosis:
