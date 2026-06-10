@@ -1,3 +1,16 @@
+---
+title: AfriFarmAI
+emoji: 🌱
+colorFrom: green
+colorTo: yellow
+sdk: gradio
+sdk_version: "6.17.3"
+python_version: "3.12"
+app_file: app.py
+pinned: false
+short_description: Multilingual crop and livestock health support for Kenyan farmers
+---
+
 # AfriFarmAI
 
 A Gradio crop and livestock health assistant for Kenyan smallholder farmers.
