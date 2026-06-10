@@ -1,7 +1,7 @@
 from unittest.mock import patch
 
 from backend.core.models import AnalyzeResult, Diagnosis, Severity, Subject
-from frontend.app_ui import _on_submit, build_ui
+from frontend.app_ui import _diagnose_button_state, _on_submit, build_ui
 
 
 def _result() -> AnalyzeResult:
@@ -45,6 +45,13 @@ def test_submit_passes_recorded_audio_path_to_pipeline() -> None:
 
 def test_build_ui_creates_blocks() -> None:
     assert build_ui() is not None
+
+
+def test_diagnose_button_requires_non_whitespace_text() -> None:
+    assert _diagnose_button_state(None)["interactive"] is False
+    assert _diagnose_button_state("")["interactive"] is False
+    assert _diagnose_button_state("   ")["interactive"] is False
+    assert _diagnose_button_state("brown spots")["interactive"] is True
 
 
 def test_swahili_response_uses_localized_message_and_labels() -> None:

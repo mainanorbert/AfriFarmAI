@@ -500,6 +500,12 @@ def _on_submit(
     )
 
 
+def _diagnose_button_state(text: Optional[str]):
+    """Enable diagnosis only when the symptom description contains text."""
+
+    return gr.update(interactive=bool(text and text.strip()))
+
+
 def build_ui() -> gr.Blocks:
     """Construct the centered chat interface."""
 
@@ -561,6 +567,7 @@ def build_ui() -> gr.Blocks:
                     submit = gr.Button(
                         UI["submit"],
                         variant="primary",
+                        interactive=False,
                         scale=0,
                         min_width=142,
                         elem_classes=["composer-action"],
@@ -604,6 +611,13 @@ def build_ui() -> gr.Blocks:
 
         locate.click(fn=None, inputs=None, outputs=[lat, lon, loc_status], js=_GEO_JS)
         theme.click(fn=None, outputs=theme, js=_THEME_JS, queue=False)
+        text.change(
+            _diagnose_button_state,
+            inputs=text,
+            outputs=submit,
+            show_progress="hidden",
+            queue=False,
+        )
         image.upload(
             lambda path: (path, gr.update(visible=True)),
             inputs=image,
