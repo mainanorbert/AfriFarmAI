@@ -10,6 +10,76 @@ from backend.core.models import AnalyzeRequest, AnalyzeResult, Severity
 from backend.core.orchestration import analyze
 from frontend.strings import LANGUAGE_CHOICES, UI
 
+# Forest-green primary palette shared across cards, composer and controls.
+_FOREST = gr.themes.Color(
+    name="forest",
+    c50="#eef9f0",
+    c100="#d6f0db",
+    c200="#aee0b9",
+    c300="#7cca8e",
+    c400="#4cae66",
+    c500="#2f9651",
+    c600="#247a40",
+    c700="#1d6135",
+    c800="#174b2b",
+    c900="#103a21",
+    c950="#082713",
+)
+
+# Soft sage neutrals replace Gradio's default grays so nothing reads as gray.
+_SAGE = gr.themes.Color(
+    name="sage",
+    c50="#f2f8f3",
+    c100="#e4f1e6",
+    c200="#cce0d0",
+    c300="#a9c8b1",
+    c400="#7faa8a",
+    c500="#5c8c69",
+    c600="#467053",
+    c700="#375845",
+    c800="#2a4435",
+    c900="#1e3227",
+    c950="#122016",
+)
+
+# Green theme so every framework default (audio player, panels, focus rings,
+# scrollbars) stays on-palette instead of falling back to gray.
+THEME = gr.themes.Soft(
+    primary_hue=_FOREST,
+    secondary_hue=_FOREST,
+    neutral_hue=_SAGE,
+    font=[gr.themes.GoogleFont("Inter"), "system-ui", "sans-serif"],
+).set(
+    body_background_fill="linear-gradient(180deg, #eff9f0 0%, #dcefdc 100%)",
+    body_background_fill_dark="linear-gradient(180deg, #082713 0%, #0d351b 100%)",
+    background_fill_primary="rgba(226, 244, 229, .9)",
+    background_fill_primary_dark="#123f22",
+    background_fill_secondary="rgba(214, 240, 219, .7)",
+    background_fill_secondary_dark="#0f3a1f",
+    block_background_fill="rgba(226, 244, 229, .9)",
+    block_background_fill_dark="#123f22",
+    block_border_color="#91bd98",
+    block_border_color_dark="#3f8052",
+    border_color_primary="#91bd98",
+    border_color_primary_dark="#3f8052",
+    border_color_accent="#2f9651",
+    input_background_fill="#e4f4e6",
+    input_background_fill_dark="#123f22",
+    input_border_color="#86b98f",
+    input_border_color_dark="#3f8052",
+    button_secondary_background_fill="#d9f0dd",
+    button_secondary_background_fill_dark="#123f22",
+    button_secondary_border_color="#86b98f",
+    button_secondary_text_color="#174b2b",
+    button_secondary_text_color_dark="#d9f2de",
+)
+
+# Green audio waveforms; the player draws these, so CSS/theme cannot recolor them.
+_WAVEFORM = gr.WaveformOptions(
+    waveform_color="#9bc5a2",
+    waveform_progress_color="#2f7d48",
+)
+
 APP_CSS = """
 .gradio-container {
     color: #123d25 !important;
@@ -17,7 +87,15 @@ APP_CSS = """
         radial-gradient(circle at 15% 0%, rgba(174, 224, 185, .82), transparent 32rem),
         linear-gradient(180deg, #eff9f0 0%, #dcefdc 100%);
 }
-.app-shell { max-width: 900px; margin: 0 auto; }
+.app-shell {
+    max-width: 900px;
+    margin: 0 auto;
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+}
+/* Production foundations: no sideways scroll, media never overflows the screen. */
+.gradio-container { overflow-x: hidden !important; }
+.gradio-container img { max-width: 100% !important; height: auto !important; }
+.response-card, .user-card, .composer { max-width: 100%; }
 .top-tools {
     position: fixed !important;
     top: 16px;
@@ -141,6 +219,34 @@ APP_CSS = """
 .response-card .prose {
     max-width: none !important;
 }
+.response-card table {
+    width: 100% !important;
+    margin-top: 8px !important;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    border: 1px solid #91bd98 !important;
+    border-radius: 14px !important;
+    overflow: hidden !important;
+}
+.response-card thead th {
+    color: #eaf7ed !important;
+    font-weight: 600 !important;
+    border: none !important;
+    background: #2f7d48 !important;
+}
+.response-card tbody td {
+    color: #1c3f2a !important;
+    border: none !important;
+    border-top: 1px solid #cfe6d4 !important;
+    background: rgba(226, 244, 229, .5) !important;
+}
+.response-card tbody tr:nth-child(even) td {
+    background: rgba(193, 226, 200, .5) !important;
+}
+.response-card table a {
+    color: #1d6b38 !important;
+    font-weight: 600 !important;
+}
 .response-audio {
     margin-top: 12px;
     border-top: 1px solid #9bc5a2;
@@ -151,10 +257,25 @@ APP_CSS = """
     justify-content: center !important;
     gap: 8px !important;
     margin-top: 10px;
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
 }
 .dealer-pagination button {
     flex: 0 0 auto !important;
     min-width: 92px !important;
+    color: #eaf7ed !important;
+    border: 1px solid #4d9b62 !important;
+    background: #2f7d48 !important;
+}
+.dealer-pagination button:hover {
+    background: #3d9257 !important;
+}
+.dealer-pagination button:disabled {
+    color: #d9f0dd !important;
+    border-color: #9bc5a2 !important;
+    background: #9bc5a2 !important;
+    opacity: .7 !important;
 }
 .dealer-page-label {
     flex: 0 0 auto !important;
@@ -327,6 +448,19 @@ APP_CSS = """
     color: #d9f2de !important;
     border-color: #4d9060 !important;
 }
+.dark-mode .response-card thead th {
+    background: #24663a !important;
+}
+.dark-mode .response-card tbody td {
+    background: rgba(23, 75, 43, .55) !important;
+    border-top-color: #2f7745 !important;
+}
+.dark-mode .response-card tbody tr:nth-child(even) td {
+    background: rgba(18, 63, 34, .7) !important;
+}
+.dark-mode .response-card table a {
+    color: #8fe0a3 !important;
+}
 .dark-mode .language-picker input,
 .dark-mode .theme-toggle,
 .dark-mode .location-toggle {
@@ -385,42 +519,39 @@ APP_CSS = """
     .user-card {
         max-width: 92%;
     }
+    /* Never clip the composer controls. */
+    .composer,
+    .prompt-row,
+    .prompt-row > div {
+        overflow: visible !important;
+    }
     .prompt-row {
         display: flex !important;
         flex-wrap: wrap !important;
-        gap: 6px !important;
+        align-items: stretch !important;
+        gap: 8px !important;
     }
     .composer-text {
         order: 1;
-        flex: 1 0 100% !important;
+        flex: 1 1 100% !important;
         width: 100% !important;
         min-width: 0 !important;
     }
     .composer-text textarea {
-        min-height: 88px !important;
+        min-height: 84px !important;
         padding: 10px !important;
     }
-    .photo-upload {
-        order: 2;
-        flex: 0 0 48px !important;
-        min-width: 48px !important;
-        max-width: 48px !important;
-    }
-    .photo-upload,
-    .photo-upload button {
-        min-width: 48px !important;
-        min-height: 48px !important;
-        height: 48px !important;
-        background-size: 26px 24px !important;
-    }
+    /* Row 2: photo button on the left, Diagnose fills the rest on one line. */
     .composer-action {
-        order: 4;
-        flex: 0 0 124px !important;
-        min-width: 124px !important;
-        max-width: 124px !important;
-        min-height: 48px !important;
-        height: 48px !important;
-        padding-inline: 8px !important;
+        order: 3;
+        flex: 1 1 auto !important;
+        width: auto !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        min-height: 50px !important;
+        height: 50px !important;
+        padding-inline: 12px !important;
+        white-space: nowrap !important;
     }
     .record-control {
         width: 100% !important;
@@ -429,11 +560,79 @@ APP_CSS = """
         margin-top: 6px;
     }
     .prompt-row .composer-action {
-        min-height: 48px !important;
+        align-self: stretch;
+        min-height: 50px !important;
     }
-    .image-preview {
+    .image-preview,
+    .selected-image {
         width: 96px !important;
         max-width: 96px !important;
+    }
+    /* Keep the fixed top tools clear of the notch / status bar. */
+    .top-tools {
+        top: calc(8px + env(safe-area-inset-top)) !important;
+    }
+    .app-shell {
+        padding-top: calc(46px + env(safe-area-inset-top));
+    }
+    /* Comfortable reading on small screens and in sunlight. */
+    .response-card {
+        padding: 14px !important;
+        border-radius: 18px !important;
+    }
+    .response-card .prose {
+        font-size: 1rem !important;
+        line-height: 1.55 !important;
+    }
+    /* Drop the two widest columns (Address, Rating) so the actionable
+       Agrovet / Phone / Distance / Map fit a phone without sideways scroll. */
+    .response-card th:nth-child(2),
+    .response-card td:nth-child(2),
+    .response-card th:nth-child(3),
+    .response-card td:nth-child(3) {
+        display: none !important;
+    }
+    .response-card table {
+        font-size: .9rem !important;
+    }
+    .response-card th,
+    .response-card td {
+        padding: 8px 9px !important;
+    }
+    /* Pagination as full-width tappable controls (>=44px). */
+    .dealer-pagination button {
+        min-height: 44px !important;
+        flex: 1 1 0 !important;
+    }
+    .dealer-page-label {
+        flex: 1 1 100% !important;
+        order: -1;
+        margin-bottom: 2px;
+    }
+    /* Photo trigger matches the composer controls and stays tappable. */
+    .photo-menu-trigger,
+    .photo-menu-trigger button {
+        order: 2;
+        min-height: 50px !important;
+        height: 50px !important;
+        background-size: 26px 24px !important;
+    }
+    .photo-menu-trigger {
+        flex: 0 0 50px !important;
+        min-width: 50px !important;
+        max-width: 50px !important;
+        align-self: stretch !important;
+    }
+    .photo-action {
+        width: 46px !important;
+        min-width: 46px !important;
+        max-width: 46px !important;
+        height: 44px !important;
+        min-height: 44px !important;
+    }
+    .disclaimer {
+        font-size: .78rem;
+        padding: 12px 14px 4px;
     }
 }
 """
@@ -762,6 +961,7 @@ def build_ui() -> gr.Blocks:
                 audio_out = gr.Audio(
                     label=UI["reply_audio"],
                     autoplay=False,
+                    waveform_options=_WAVEFORM,
                     elem_classes=["response-audio"],
                 )
 
@@ -834,6 +1034,7 @@ def build_ui() -> gr.Blocks:
                 container=True,
                 recording=False,
                 buttons=[],
+                waveform_options=_WAVEFORM,
                 elem_classes=["record-control"],
             )
 
