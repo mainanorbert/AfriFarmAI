@@ -1,38 +1,49 @@
-"""Spoken replies using Kenyan Edge TTS voices, with gTTS as fallback."""
+"""Spoken replies using hosted VoxCPM2, with gTTS as fallback."""
 
 from __future__ import annotations
 
-import asyncio
 import tempfile
 from typing import Optional
 
+import requests
+
+from backend.core.config import settings
 from backend.core.logging_utils import get_logger
 from backend.core.models import Language
 
 log = get_logger("services.tts")
 
-# Dholuo has no dedicated Edge voice, so use the Kenyan Swahili voice.
-_EDGE_VOICE: dict[Language, str] = {
-    "sw": "sw-KE-ZuriNeural",
-    "luo": "sw-KE-ZuriNeural",
-    "en": "en-KE-AsiliaNeural",
-}
-
-# Lightweight fallback if Edge TTS is temporarily unavailable.
-_GTTS_LANG: dict[Language, str] = {"sw": "sw", "luo": "sw", "en": "en"}
+# VoxCPM2 supports both application languages.
+_VOXCPM_LANGUAGES: set[Language] = {"sw", "en"}
+_GTTS_LANG: dict[Language, str] = {"sw": "sw", "en": "en"}
 
 
-async def _synthesize_edge(text: str, language: Language, path: str) -> None:
-    """Save speech using a Kenyan Edge TTS voice."""
+def _synthesize_voxcpm(text: str, path: str) -> None:
+    """Request WAV speech from the authenticated Modal VoxCPM2 endpoint."""
 
-    import edge_tts
+    if not settings.modal_tts_url or not settings.modal_key or not settings.modal_secret:
+        raise RuntimeError("Modal TTS configuration is incomplete")
 
-    voice = _EDGE_VOICE.get(language, _EDGE_VOICE["en"])
-    await edge_tts.Communicate(text=text, voice=voice).save(path)
+    response = requests.post(
+        settings.modal_tts_url,
+        json={"text": text},
+        headers={
+            "Modal-Key": settings.modal_key,
+            "Modal-Secret": settings.modal_secret,
+        },
+        timeout=settings.modal_tts_timeout_seconds,
+    )
+    response.raise_for_status()
+    content_type = response.headers.get("content-type", "").lower()
+    if not content_type.startswith("audio/wav") or not response.content:
+        raise RuntimeError("Modal TTS returned an invalid audio response")
+
+    with open(path, "wb") as audio_file:
+        audio_file.write(response.content)
 
 
 def _synthesize_gtts(text: str, language: Language, path: str) -> None:
-    """Save speech with gTTS when Edge TTS is unavailable."""
+    """Save speech with gTTS when VoxCPM2 is unavailable."""
 
     from gtts import gTTS
 
@@ -40,20 +51,25 @@ def _synthesize_gtts(text: str, language: Language, path: str) -> None:
 
 
 def synthesize(text: str, language: Language) -> Optional[str]:
-    """Render text to an MP3, preferring Kenyan Edge TTS voices."""
+    """Render speech, preferring hosted VoxCPM2 for English and Swahili."""
 
-    path = tempfile.mktemp(suffix=".mp3")
-    try:
-        asyncio.run(_synthesize_edge(text, language, path))
-        log.info("synthesize op=tts engine=edge lang=%s ok=1", language)
-        return path
-    except Exception:
-        log.warning("synthesize op=tts engine=edge lang=%s ok=0 fallback=gtts", language)
+    if language in _VOXCPM_LANGUAGES:
+        wav_path = tempfile.mktemp(suffix=".wav")
+        try:
+            _synthesize_voxcpm(text, wav_path)
+            log.info("synthesize op=tts engine=voxcpm2 lang=%s ok=1", language)
+            return wav_path
+        except Exception:
+            log.warning(
+                "synthesize op=tts engine=voxcpm2 lang=%s ok=0 fallback=gtts",
+                language,
+            )
 
+    mp3_path = tempfile.mktemp(suffix=".mp3")
     try:
-        _synthesize_gtts(text, language, path)
+        _synthesize_gtts(text, language, mp3_path)
         log.info("synthesize op=tts engine=gtts lang=%s ok=1", language)
-        return path
+        return mp3_path
     except Exception:
         log.warning("synthesize op=tts engine=gtts lang=%s ok=0", language)
         return None

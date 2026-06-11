@@ -29,6 +29,9 @@ class Settings:
     nvidia_api_key: str = os.getenv("NVIDIA_API_KEY", "")
     cohere_api_key: str = os.getenv("COHERE_API_KEY", "")
     google_places_api_key: str = os.getenv("GOOGLE_PLACES_API_KEY", "")
+    modal_tts_url: str = os.getenv("MODAL_TTS_URL", "")
+    modal_key: str = os.getenv("MODAL_KEY", "")
+    modal_secret: str = os.getenv("MODAL_SECRET", "")
 
     nvidia_model_name: str = os.getenv(
         "NVIDIA_MODEL_NAME",
@@ -45,6 +48,7 @@ class Settings:
     )
 
     provider_timeout_seconds: int = int(os.getenv("PROVIDER_TIMEOUT_SECONDS", "30"))
+    modal_tts_timeout_seconds: int = int(os.getenv("MODAL_TTS_TIMEOUT_SECONDS", "300"))
     min_confidence: float = float(os.getenv("MIN_CONFIDENCE", "0.45"))
 
     @property

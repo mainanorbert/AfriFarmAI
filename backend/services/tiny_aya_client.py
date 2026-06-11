@@ -2,7 +2,7 @@
 hosted Chat API. Always live — no canned templates.
 
 Two jobs in the pipeline:
-  * ``translate_to_english`` — forward-translate the farmer's Swahili/Dholuo so
+  * ``translate_to_english`` — forward-translate the farmer's Swahili so
     the diagnosis model (weak in Swahili) reasons in English.
   * ``localize`` — render the English diagnosis back into the farmer's language.
 
@@ -21,7 +21,7 @@ from backend.core.models import Diagnosis, Language
 
 log = get_logger("services.tiny_aya")
 
-_LANG_NAME: dict[Language, str] = {"sw": "Swahili", "luo": "Dholuo (Luo)", "en": "English"}
+_LANG_NAME: dict[Language, str] = {"sw": "Swahili", "en": "English"}
 
 _ENGLISH_TEMPLATE = (
     "Likely problem: {condition} (severity: {severity}).\n"

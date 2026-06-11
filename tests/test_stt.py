@@ -14,17 +14,16 @@ def test_english_routes_to_cohere(monkeypatch):
     assert s.transcribe("/tmp/a.wav", "en") == "COHERE"
 
 
-def test_swahili_and_dholuo_route_to_whisper(monkeypatch):
+def test_swahili_routes_to_whisper(monkeypatch):
     monkeypatch.setattr(s, "_transcribe_cohere", lambda p, l: "COHERE")
     monkeypatch.setattr(s, "_transcribe_whisper", lambda p, l: "WHISPER")
     assert s.transcribe("/tmp/a.wav", "sw") == "WHISPER"
-    assert s.transcribe("/tmp/a.wav", "luo") == "WHISPER"
 
 
 def test_whisper_without_token_raises(monkeypatch):
     monkeypatch.setattr(s, "settings", SimpleNamespace(hf_token=""))
     with pytest.raises(ProviderError):
-        s._transcribe_whisper("/tmp/a.wav", "luo")
+        s._transcribe_whisper("/tmp/a.wav", "sw")
 
 
 def test_cohere_without_key_raises(monkeypatch):

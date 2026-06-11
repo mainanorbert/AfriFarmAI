@@ -4,14 +4,14 @@
 
 Smallholder farmers across Kenya frequently struggle to identify crop diseases and livestock illnesses early enough to prevent major losses. Access to agricultural extension officers, veterinarians, and agronomists is often limited, especially in rural communities. Language barriers, low literacy levels, and lack of localized agricultural support further reduce access to timely expert guidance.
 
-ShambaAI is a multilingual AI-powered agricultural assistant that enables farmers to describe symptoms using voice or text in Swahili or Dholuo, upload images of affected crops or animals, receive disease diagnosis and treatment recommendations, and locate nearby agro-dealers for agricultural supplies and veterinary products.
+ShambaAI is a multilingual AI-powered agricultural assistant that enables farmers to describe symptoms using voice or text in Swahili or English, upload images of affected crops or animals, receive disease diagnosis and treatment recommendations, and locate nearby agro-dealers for agricultural supplies and veterinary products.
 
 ## What Success Looks Like
 
 * Farmers can describe crop or livestock symptoms using voice or text.
 * Farmers can upload images of affected crops or animals for analysis.
 * Voice messages are automatically transcribed into text.
-* Swahili and Dholuo inputs are translated for AI analysis.
+* Swahili inputs are translated for AI analysis.
 * Crop and livestock images are analyzed using multimodal AI models.
 * The system identifies likely diseases or health conditions.
 * Disease severity is classified as mild, moderate, or severe.
@@ -55,7 +55,7 @@ ShambaAI is a multilingual AI-powered agricultural assistant that enables farmer
 * Hugging Face Inference API
 * NVIDIA API
 * Cohere API
-* gTTS
+* VoxCPM2 hosted on Modal, with gTTS fallback
 
 ### Deployment
 

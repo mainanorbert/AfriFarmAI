@@ -1,4 +1,4 @@
-"""Localized UI strings (sw/luo/en). Loaded, never model-generated."""
+"""Localized UI strings (sw/en). Loaded, never model-generated."""
 
 from __future__ import annotations
 
@@ -26,4 +26,4 @@ UI = {
     ),
 }
 
-LANGUAGE_CHOICES = [("Kiswahili", "sw"), ("Dholuo", "luo"), ("English", "en")]
+LANGUAGE_CHOICES = [("Kiswahili", "sw"), ("English", "en")]
