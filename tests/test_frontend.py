@@ -1,6 +1,16 @@
 from unittest.mock import patch
 
-from backend.core.models import AnalyzeResult, Dealer, Diagnosis, Severity, Subject
+import pytest
+from pydantic import ValidationError
+
+from backend.core.models import (
+    AnalyzeRequest,
+    AnalyzeResult,
+    Dealer,
+    Diagnosis,
+    Severity,
+    Subject,
+)
 from frontend.app_ui import (
     _captured_image_state,
     _dealer_pagination_updates,
@@ -98,6 +108,14 @@ def test_captured_image_is_preserved_when_camera_closes() -> None:
 
 def test_build_ui_creates_blocks() -> None:
     assert build_ui() is not None
+
+
+def test_language_choices_exclude_unsupported_dholuo() -> None:
+    from frontend.strings import LANGUAGE_CHOICES
+
+    assert LANGUAGE_CHOICES == [("Kiswahili", "sw"), ("English", "en")]
+    with pytest.raises(ValidationError):
+        AnalyzeRequest(language="luo", text="symptoms")
 
 
 def test_location_retry_is_compact_and_manual_location_ui_is_absent() -> None:

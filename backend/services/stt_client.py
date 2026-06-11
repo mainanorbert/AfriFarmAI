@@ -1,8 +1,8 @@
 """Speech-to-text with per-language routing — always live, no canned data.
 
   * English  -> Cohere Transcribe (top ASR accuracy on its 14 languages).
-  * Swahili / Dholuo -> Whisper (HF Inference). Cohere Transcribe does NOT
-    support Swahili/Dholuo, so it must never handle them.
+  * Swahili -> Whisper (HF Inference). Cohere Transcribe does NOT support
+    Swahili, so it must never handle it.
 
 Any failure raises :class:`ProviderError` so the farmer gets an honest message
 rather than a fabricated transcript.
@@ -88,7 +88,7 @@ def _transcribe_cohere(audio_path: str, language: Language) -> str:
 def transcribe(audio_path: str, language: Language = "sw") -> str:
     """Transcribe the farmer's recording, routing to the right engine.
 
-    English uses Cohere Transcribe; Swahili/Dholuo use Whisper. Raises
+    English uses Cohere Transcribe; Swahili uses Whisper. Raises
     :class:`ProviderError` on any failure.
     """
 
