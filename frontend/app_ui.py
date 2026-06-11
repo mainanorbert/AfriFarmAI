@@ -638,10 +638,18 @@ APP_CSS = """
 """
 
 _SEVERITY_MARKERS = {
-    Severity.MILD: "Mild",
-    Severity.MODERATE: "Moderate",
-    Severity.SEVERE: "Severe",
-    Severity.UNKNOWN: "Needs review",
+    "sw": {
+        Severity.MILD: "Kidogo",
+        Severity.MODERATE: "Wastani",
+        Severity.SEVERE: "Kali",
+        Severity.UNKNOWN: "Inahitaji ukaguzi",
+    },
+    "en": {
+        Severity.MILD: "Mild",
+        Severity.MODERATE: "Moderate",
+        Severity.SEVERE: "Severe",
+        Severity.UNKNOWN: "Needs review",
+    },
 }
 
 _DEALERS_PER_PAGE = 5
@@ -656,6 +664,7 @@ _RESPONSE_LABELS = {
         "searched_radius": "Tumetafuta hadi kilomita {radius}.",
         "escalate": "Tafadhali wasiliana na daktari wa mifugo au afisa wa ugani.",
         "low_confidence": "Uhakika ni mdogo: tafadhali tuma picha iliyo wazi au maelezo zaidi.",
+        "confidence": "Uhakika",
     },
     "luo": {
         "description": "Wach mari",
@@ -676,6 +685,7 @@ _RESPONSE_LABELS = {
         "searched_radius": "Searched up to {radius} km.",
         "escalate": "Please consult a vet or extension officer.",
         "low_confidence": "Low confidence: please send a clearer photo or more detail.",
+        "confidence": "Confidence",
     },
 }
 
@@ -717,6 +727,20 @@ def _render_diagnosis(result: AnalyzeResult) -> str:
 
     diagnosis = result.diagnosis
     labels = _RESPONSE_LABELS[result.language]
+    if result.language == "sw":
+        marker = _SEVERITY_MARKERS["sw"].get(
+            diagnosis.severity, "Inahitaji ukaguzi"
+        )
+        lines = [
+            f"**{marker}** | {labels['confidence']}: **{diagnosis.confidence:.0%}**",
+            "",
+            result.localized_message,
+        ]
+        if diagnosis.escalate:
+            lines.append(f"\n> {labels['escalate']}")
+        if result.low_confidence:
+            lines.append(f"\n> {labels['low_confidence']}")
+        return "\n".join(lines)
     if result.language != "en":
         lines = [result.localized_message]
         if diagnosis.escalate:
@@ -725,7 +749,7 @@ def _render_diagnosis(result: AnalyzeResult) -> str:
             lines.append(f"\n> {labels['low_confidence']}")
         return "\n".join(lines)
 
-    marker = _SEVERITY_MARKERS.get(diagnosis.severity, "Needs review")
+    marker = _SEVERITY_MARKERS["en"].get(diagnosis.severity, "Needs review")
     lines = [
         f"### {diagnosis.condition}",
         f"**{marker}** | Confidence: **{diagnosis.confidence:.0%}**",
@@ -872,10 +896,15 @@ def _on_submit(
     )
 
 
-def _diagnose_button_state(text: Optional[str]):
-    """Enable diagnosis only when the symptom description contains text."""
+def _diagnose_button_state(
+    text: Optional[str],
+    audio_path: Optional[str],
+    image_path: Optional[str],
+):
+    """Enable diagnosis when the farmer has provided any supported input."""
 
-    return gr.update(interactive=bool(text and text.strip()))
+    has_text = bool(text and text.strip())
+    return gr.update(interactive=has_text or bool(audio_path) or bool(image_path))
 
 
 def _captured_image_state(path: Optional[str]):
@@ -1079,7 +1108,21 @@ def build_ui() -> gr.Blocks:
         )
         text.change(
             _diagnose_button_state,
-            inputs=text,
+            inputs=[text, audio, selected_image],
+            outputs=submit,
+            show_progress="hidden",
+            queue=False,
+        )
+        audio.change(
+            _diagnose_button_state,
+            inputs=[text, audio, selected_image],
+            outputs=submit,
+            show_progress="hidden",
+            queue=False,
+        )
+        selected_image.change(
+            _diagnose_button_state,
+            inputs=[text, audio, selected_image],
             outputs=submit,
             show_progress="hidden",
             queue=False,

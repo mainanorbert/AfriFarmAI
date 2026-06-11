@@ -13,3 +13,5 @@ CACHEDIR.TAG
 .claude/
 CLAUDE.md
 .claude.json
+images/
+test.py
