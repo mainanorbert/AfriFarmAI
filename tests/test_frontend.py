@@ -138,11 +138,13 @@ def test_photo_menu_uses_compact_upload_and_camera_controls() -> None:
     assert upload_buttons[0].file_types == ["image"]
 
 
-def test_diagnose_button_requires_non_whitespace_text() -> None:
-    assert _diagnose_button_state(None)["interactive"] is False
-    assert _diagnose_button_state("")["interactive"] is False
-    assert _diagnose_button_state("   ")["interactive"] is False
-    assert _diagnose_button_state("brown spots")["interactive"] is True
+def test_diagnose_button_requires_any_supported_input() -> None:
+    assert _diagnose_button_state(None, None, None)["interactive"] is False
+    assert _diagnose_button_state("", None, None)["interactive"] is False
+    assert _diagnose_button_state("   ", None, None)["interactive"] is False
+    assert _diagnose_button_state("brown spots", None, None)["interactive"] is True
+    assert _diagnose_button_state(None, "/tmp/voice.wav", None)["interactive"] is True
+    assert _diagnose_button_state(None, None, "/tmp/crop.jpg")["interactive"] is True
 
 
 def test_swahili_response_uses_localized_message_and_labels() -> None:
@@ -157,7 +159,10 @@ def test_swahili_response_uses_localized_message_and_labels() -> None:
 
     response = _render_response(result)
     assert "Ondoa majani yaliyoathirika." in response
+    assert "**Wastani** | Uhakika: **72%**" in response
     assert "Hakuna wauzaji waliopendekezwa" in response
+    assert "Moderate" not in response
+    assert "Confidence" not in response
     assert "Nearby agro-dealers" not in response
 
 
