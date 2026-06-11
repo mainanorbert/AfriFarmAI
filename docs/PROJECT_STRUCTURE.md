@@ -20,7 +20,7 @@ AfriFarmAI/
 │  │  ├─ translate.py                 # /api/translate – Tiny Aya 3B translation
 │  │  ├─ vision.py                    # /api/vision – MiniCPM-V 4.6 image analysis
 │  │  ├─ reason.py                    # /api/reason – Nemotron 30B reasoning
-│  │  ├─ tts.py                       # /api/tts – TTS REST proxy (sw/luo)
+│  │  ├─ tts.py                       # /api/tts – TTS REST proxy (sw/en)
 │  │  ├─ dealers.py                   # /api/dealers/find – dynamic Google Places lookup
 │  │  ├─ analyze.py                   # /api/analyze – end-to-end orchestration
 │  │  ├─ errors.py                    # Error taxonomy -> HTTP mapping
@@ -44,7 +44,7 @@ AfriFarmAI/
 ├─ frontend/                          # Gradio frontend (Blocks layout, components, strings plan)
 │  ├─ app_ui.py                       # One-screen layout and wiring to API endpoints
 │  ├─ components.py                   # Reusable UI pieces (badges, panels, modals)
-│  └─ strings.py                      # Localized UI keys (sw/luo/en) – loaded, not generated
+│  └─ strings.py                      # Localized UI keys (sw/en) – loaded, not generated
 ├─ tests/                             # Documentation-first test plans and intents
 │  ├─ test_smoke_stt.py               # STT smoke (spec-only until implemented)
 │  ├─ test_smoke_translate.py
@@ -64,7 +64,7 @@ AfriFarmAI/
 │  ├─ OPERATIONS_NOTES.md             # Health checks, timeouts, privacy, rate limits
 │  ├─ DECISIONS.md                    # PM final scope/providers/copy approvals
 │  ├─ UI_WIREFRAMES.md                # Designer one-screen Blocks layout
-│  ├─ UX_COPY.md                      # Localized strings (sw/luo/en)
+│  ├─ UX_COPY.md                      # Localized strings (sw/en)
 │  ├─ ACCESSIBILITY_NOTES.md          # Low-end screen guidance
 │  ├─ OPS_CHECKLIST.md                # Provisioning and SLOs
 │  └─ (links to AGENT_TASKS.md)       # Role-based deliverables

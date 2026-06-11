@@ -7,8 +7,8 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
 
-Language = Literal["sw", "luo", "en"]
-"""Supported languages: Swahili (sw), Dholuo (luo), English (en)."""
+Language = Literal["sw", "en"]
+"""Supported languages: Swahili (sw) and English (en)."""
 
 
 class Severity(str, Enum):

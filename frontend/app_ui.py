@@ -666,16 +666,6 @@ _RESPONSE_LABELS = {
         "low_confidence": "Uhakika ni mdogo: tafadhali tuma picha iliyo wazi au maelezo zaidi.",
         "confidence": "Uhakika",
     },
-    "luo": {
-        "description": "Wach mari",
-        "dealers": "Jo-usumb gik pur machiegni",
-        "no_dealers": "Onge ja-usumb ma oyier ne dwoko ni.",
-        "location_required": "Yie mondo wanwang kama intie kata di alama mar kama malo mondo wayud jo-usumb machiegni.",
-        "dealer_error": "Ok wanyal manyo jo-usumb machiegni sani. Tem kendo bang'e.",
-        "searched_radius": "Wase manyo nyaka kilomita {radius}.",
-        "escalate": "Tim ber iwuoyo gi jadaktar mar jamni kata jatich mar pur.",
-        "low_confidence": "Genruok en matin: tim ber ior picha maler kata wach mang'eny.",
-    },
     "en": {
         "description": "Your description",
         "dealers": "Nearby agro-dealers",
