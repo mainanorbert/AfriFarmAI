@@ -55,13 +55,27 @@ def diagnose(symptom_text: str, image_path: Optional[str] = None) -> Diagnosis:
     """
 
     if not settings.nvidia_api_key:
+        log.error("diagnose op=reason error=missing_key")
         raise ProviderError("diagnosis", "missing NVIDIA key")
 
     try:
         content = _call_nemotron(symptom_text, image_path)
     except requests.RequestException as exc:
         # No request content logged, per privacy guardrails.
-        log.error("diagnose op=reason error=request_failed")
+        response = exc.response
+        status = response.status_code if response is not None else "none"
+        request_id = (
+            response.headers.get("x-request-id", "unknown")
+            if response is not None
+            else "unknown"
+        )
+        error = "timeout" if isinstance(exc, requests.Timeout) else "request_failed"
+        log.error(
+            "diagnose op=reason error=%s status=%s request_id=%s",
+            error,
+            status,
+            request_id,
+        )
         raise ProviderError("diagnosis") from exc
 
     data = _extract_json(content)
