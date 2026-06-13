@@ -116,7 +116,10 @@ def localize(diagnosis: Diagnosis, language: Language) -> str:
     prompt = (
         f"Translate the agricultural advice between <text> tags into {name}. "
         "Use simple words a smallholder farmer understands. Translate accurately "
-        "and do not add or remove information. Output ONLY the translation.\n"
+        "and do not add or remove information. Translate the disease or condition "
+        "name and every explanation into the target language; the application "
+        "displays the original English disease name separately. Output ONLY the "
+        "translation.\n"
         f"<text>\n{english}\n</text>"
     )
     try:
@@ -128,3 +131,26 @@ def localize(diagnosis: Diagnosis, language: Language) -> str:
     except Exception:  # degrade to the real English diagnosis
         log.warning("localize op=translate lang=%s ok=0 fallback=english", language)
         return english
+
+
+def localize_condition(condition: str, language: Language) -> str:
+    """Translate only a disease or condition name for bilingual display."""
+
+    if language == "en" or not condition.strip():
+        return condition
+
+    name = _LANG_NAME.get(language, "the target language")
+    prompt = (
+        f"Translate the crop disease, pest, or animal health condition name "
+        f"between <text> tags into {name}. Output ONLY the translated condition "
+        f"name, with no explanation.\n<text>\n{condition}\n</text>"
+    )
+    try:
+        out = _chat(prompt)
+        if not out:
+            raise ValueError("empty condition translation")
+        log.info("localize op=condition lang=%s ok=1", language)
+        return out
+    except Exception:
+        log.warning("localize op=condition lang=%s ok=0 fallback=english", language)
+        return condition

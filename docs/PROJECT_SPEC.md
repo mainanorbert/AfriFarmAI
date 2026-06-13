@@ -18,6 +18,7 @@ ShambaAI is a multilingual AI-powered agricultural assistant that enables farmer
 * Farmers receive practical treatment recommendations.
 * Farmers receive prevention guidance to reduce future outbreaks.
 * Responses are returned in the farmer's preferred language.
+* Swahili results display the disease or condition name as `Kiswahili / English`.
 * Audio responses are generated for users with limited literacy.
 * Nearby agro-dealers are recommended using GPS location data.
 * Agro-dealer contact information and specialties are displayed.
@@ -45,6 +46,7 @@ ShambaAI is a multilingual AI-powered agricultural assistant that enables farmer
 * Tiny Aya
 * MiniCPM-V 4.6
 * Nemotron Nano Omni 30B-A3B
+* OpenAI GPT-5.4 (image-diagnosis fallback)
 
 ### Database
 

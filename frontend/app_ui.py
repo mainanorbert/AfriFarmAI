@@ -721,11 +721,19 @@ def _render_diagnosis(result: AnalyzeResult) -> str:
         marker = _SEVERITY_MARKERS["sw"].get(
             diagnosis.severity, "Inahitaji ukaguzi"
         )
-        lines = [
+        lines = []
+        disease_identified = (
+            not result.low_confidence
+            and diagnosis.condition.strip().lower() not in {"", "unclear", "unknown"}
+        )
+        if disease_identified:
+            swahili_condition = result.localized_condition or diagnosis.condition
+            lines.append(f"### {swahili_condition} / {diagnosis.condition}")
+        lines.extend([
             f"**{marker}** | {labels['confidence']}: **{diagnosis.confidence:.0%}**",
             "",
             result.localized_message,
-        ]
+        ])
         if diagnosis.escalate:
             lines.append(f"\n> {labels['escalate']}")
         if result.low_confidence:

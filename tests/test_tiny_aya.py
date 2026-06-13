@@ -53,8 +53,12 @@ def test_localize_english_returns_composed_english():
 
 
 def test_localize_swahili_uses_model(monkeypatch):
-    monkeypatch.setattr(a, "_chat", lambda prompt: "ujumbe kwa Kiswahili")
+    prompts = []
+    monkeypatch.setattr(
+        a, "_chat", lambda prompt: prompts.append(prompt) or "ujumbe kwa Kiswahili"
+    )
     assert a.localize(_diag(), "sw") == "ujumbe kwa Kiswahili"
+    assert "displays the original English disease name separately" in prompts[0]
 
 
 def test_localize_degrades_to_english_on_failure(monkeypatch):
@@ -64,3 +68,19 @@ def test_localize_degrades_to_english_on_failure(monkeypatch):
     monkeypatch.setattr(a, "_chat", boom)
     out = a.localize(_diag(), "sw")
     assert "Maize leaf blight" in out  # fell back to the real English diagnosis
+
+
+def test_localize_condition_translates_only_disease_name(monkeypatch):
+    prompts = []
+    monkeypatch.setattr(
+        a, "_chat", lambda prompt: prompts.append(prompt) or "Ugonjwa wa majani"
+    )
+
+    assert a.localize_condition("Maize leaf blight", "sw") == "Ugonjwa wa majani"
+    assert "Output ONLY the translated condition name" in prompts[0]
+
+
+def test_localize_condition_degrades_to_english_on_failure(monkeypatch):
+    monkeypatch.setattr(a, "_chat", lambda prompt: (_ for _ in ()).throw(RuntimeError()))
+
+    assert a.localize_condition("Maize leaf blight", "sw") == "Maize leaf blight"
