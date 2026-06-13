@@ -36,11 +36,48 @@ jobs:
             exit 1
           fi
 
-      - name: Sync to Hugging Face Space
-        uses: huggingface/hub-sync@v0.1.0
-        with:
-          github_repo_id: ${{ github.repository }}
-          huggingface_repo_id: ${{ env.HF_SPACE_ID }}
-          hf_token: ${{ env.HF_TOKEN }}
-          repo_type: space
-          space_sdk: gradio
+      - name: Push to existing Hugging Face Space
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          deploy_dir="${RUNNER_TEMP}/hf-space"
+          askpass="${RUNNER_TEMP}/hf-askpass.sh"
+
+          mkdir -p "${deploy_dir}"
+          git archive --format=tar HEAD | tar -xf - -C "${deploy_dir}"
+          rm -rf "${deploy_dir}/.github"
+
+          cat > "${askpass}" <<'EOF'
+          #!/usr/bin/env bash
+          case "$1" in
+            *Username*) echo "hf_user" ;;
+            *Password*) echo "${HF_TOKEN}" ;;
+          esac
+          EOF
+          chmod 700 "${askpass}"
+          export GIT_ASKPASS="${askpass}"
+          export GIT_TERMINAL_PROMPT=0
+
+          git -C "${deploy_dir}" init --initial-branch=main
+          git -C "${deploy_dir}" config user.name "github-actions[bot]"
+          git -C "${deploy_dir}" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git -C "${deploy_dir}" add --all
+          git -C "${deploy_dir}" commit -m "Sync ${GITHUB_SHA} from GitHub"
+          git -C "${deploy_dir}" remote add space "https://huggingface.co/spaces/${HF_SPACE_ID}.git"
+
+          for attempt in 1 2 3 4; do
+            echo "Hugging Face push attempt ${attempt} of 4"
+            if git -C "${deploy_dir}" push --force space main; then
+              exit 0
+            fi
+
+            if [[ "${attempt}" -eq 4 ]]; then
+              echo "::error::Hugging Face push failed after 4 attempts."
+              exit 1
+            fi
+
+            delay=$((attempt * 30))
+            echo "::warning::Hugging Face push failed; retrying in ${delay}s."
+            sleep "${delay}"
+          done
