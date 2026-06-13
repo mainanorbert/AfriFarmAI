@@ -1,6 +1,15 @@
 import pytest
+from types import SimpleNamespace
 
 from backend.core import config
+
+
+def test_openai_base_host_excludes_path_and_credentials() -> None:
+    settings = config.Settings(
+        openai_base_url="https://user:secret@example.test/custom/v1"
+    )
+
+    assert settings.openai_base_host == "example.test"
 
 
 def test_get_settings_reads_nvidia_dotenv(
