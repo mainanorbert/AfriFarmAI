@@ -72,6 +72,7 @@ def diagnose(symptom_text: str, image_path: str) -> Diagnosis:
         image_url = _encode_image_data_uri(image_path)
         client = OpenAI(
             api_key=settings.openai_api_key,
+            base_url=settings.openai_base_url,
             timeout=settings.provider_timeout_seconds,
         )
         response = client.responses.create(
@@ -101,12 +102,15 @@ def diagnose(symptom_text: str, image_path: str) -> Diagnosis:
         )
         diagnosis = Diagnosis.model_validate(json.loads(response.output_text))
     except (OpenAIError, OSError, json.JSONDecodeError, ValidationError, TypeError) as exc:
-        error, status, request_id = _safe_error_context(exc)
+        error, status, request_id, cause = _safe_error_context(exc)
         log.error(
-            "diagnose op=vision_fallback error=%s status=%s request_id=%s",
+            "diagnose op=vision_fallback error=%s status=%s request_id=%s "
+            "cause=%s host=%s",
             error,
             status,
             request_id,
+            cause,
+            settings.openai_base_host,
         )
         raise ProviderError("diagnosis", "OpenAI vision fallback failed") from exc
 
@@ -114,7 +118,7 @@ def diagnose(symptom_text: str, image_path: str) -> Diagnosis:
     return diagnosis
 
 
-def _safe_error_context(exc: Exception) -> tuple[str, str, str]:
+def _safe_error_context(exc: Exception) -> tuple[str, str, str, str]:
     """Return privacy-safe provider diagnostics without response content."""
 
     if isinstance(exc, APIStatusError):
@@ -122,14 +126,24 @@ def _safe_error_context(exc: Exception) -> tuple[str, str, str]:
             "status_error",
             str(exc.status_code),
             str(getattr(exc, "request_id", None) or "unknown"),
+            type(exc).__name__,
         )
     if isinstance(exc, APITimeoutError):
-        return "timeout", "none", "unknown"
+        return "timeout", "none", "unknown", _root_cause_name(exc)
     if isinstance(exc, APIConnectionError):
-        return "connection_error", "none", "unknown"
+        return "connection_error", "none", "unknown", _root_cause_name(exc)
     if isinstance(exc, OSError):
-        return "image_file_error", "none", "unknown"
-    return "invalid_response", "none", "unknown"
+        return "image_file_error", "none", "unknown", type(exc).__name__
+    return "invalid_response", "none", "unknown", type(exc).__name__
+
+
+def _root_cause_name(exc: Exception) -> str:
+    """Return only the deepest exception class name, never its message."""
+
+    cause: BaseException = exc
+    while cause.__cause__ is not None:
+        cause = cause.__cause__
+    return type(cause).__name__
 
 
 def _encode_image_data_uri(image_path: str) -> str:

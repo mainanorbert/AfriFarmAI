@@ -10,6 +10,7 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 from pathlib import Path
+from urllib.parse import urlparse
 
 from dotenv import dotenv_values, load_dotenv
 
@@ -43,6 +44,7 @@ class Settings:
         os.getenv("NEMOTRON_BASE_URL", "https://integrate.api.nvidia.com/v1"),
     )
     openai_vision_model: str = os.getenv("OPENAI_VISION_MODEL", "gpt-5.4")
+    openai_base_url: str = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
     tiny_aya_model: str = os.getenv("TINY_AYA_MODEL", "CohereLabs/tiny-aya-global")
     asr_model: str = os.getenv("ASR_MODEL", "openai/whisper-large-v3")
     cohere_transcribe_model: str = os.getenv(
@@ -64,6 +66,12 @@ class Settings:
         """Compatibility alias used by the diagnosis provider."""
 
         return self.nvidia_base_url
+
+    @property
+    def openai_base_host(self) -> str:
+        """Hostname only, safe for operational logging."""
+
+        return urlparse(self.openai_base_url).hostname or "invalid"
 
 
 def get_settings() -> Settings:

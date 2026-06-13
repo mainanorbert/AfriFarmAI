@@ -84,4 +84,5 @@ def test_safe_error_context_includes_status_and_request_id():
         "status_error",
         "400",
         "req_test",
+        "BadRequestError",
     )
