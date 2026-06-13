@@ -24,6 +24,12 @@ from backend.services import (
 log = get_logger("core.orchestration")
 
 
+def _message(req: AnalyzeRequest, english: str, swahili: str) -> str:
+    """Choose fixed operational copy in the farmer's selected language."""
+
+    return swahili if req.language == "sw" else english
+
+
 def _notice(req: AnalyzeRequest, transcript: str, condition: str, message: str) -> AnalyzeResult:
     """Build a no-diagnosis result that shows the farmer an honest message."""
 
@@ -66,8 +72,13 @@ def analyze(req: AnalyzeRequest) -> AnalyzeResult:
                 req,
                 "",
                 "Audio not understood",
-                "We couldn't process your voice message. Please re-record "
-                "clearly, or type your symptoms.",
+                _message(
+                    req,
+                    "We couldn't process your voice message. Please re-record "
+                    "clearly, or type your symptoms.",
+                    "Hatukuweza kuchakata ujumbe wako wa sauti. Tafadhali rekodi "
+                    "tena kwa uwazi au andika dalili.",
+                ),
             )
     else:
         transcript = (req.text or "").strip()
@@ -78,8 +89,13 @@ def analyze(req: AnalyzeRequest) -> AnalyzeResult:
             req,
             "",
             "No input",
-            "Please record a voice message, type the symptoms, or add a photo "
-            "of the crop or animal.",
+            _message(
+                req,
+                "Please record a voice message, type the symptoms, or add a photo "
+                "of the crop or animal.",
+                "Tafadhali rekodi ujumbe wa sauti, andika dalili, au ongeza picha "
+                "ya zao au mnyama.",
+            ),
         )
 
     # 2) Forward-translate to English (the diagnosis model is weak in Swahili),
@@ -98,8 +114,13 @@ def analyze(req: AnalyzeRequest) -> AnalyzeResult:
                     req,
                     transcript,
                     "Service busy",
-                    "The diagnosis service is unavailable right now. Please try again "
-                    "in a moment.",
+                    _message(
+                        req,
+                        "The diagnosis service is unavailable right now. Please try "
+                        "again in a moment.",
+                        "Huduma ya utambuzi haipatikani kwa sasa. Tafadhali jaribu "
+                        "tena baada ya muda mfupi.",
+                    ),
                 )
         else:
             log.info("analyze op=pipeline path=diagnosis_error")
@@ -107,8 +128,13 @@ def analyze(req: AnalyzeRequest) -> AnalyzeResult:
                 req,
                 transcript,
                 "Service busy",
-                "The diagnosis service is unavailable right now. Please try again "
-                "in a moment.",
+                _message(
+                    req,
+                    "The diagnosis service is unavailable right now. Please try "
+                    "again in a moment.",
+                    "Huduma ya utambuzi haipatikani kwa sasa. Tafadhali jaribu tena "
+                    "baada ya muda mfupi.",
+                ),
             )
 
     # 4) Safety gating (low-confidence fallback, escalation flags).

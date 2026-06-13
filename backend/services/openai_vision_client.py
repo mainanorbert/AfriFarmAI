@@ -7,7 +7,7 @@ import json
 import mimetypes
 from pathlib import Path
 
-from openai import OpenAI, OpenAIError
+from openai import APIConnectionError, APIStatusError, APITimeoutError, OpenAI, OpenAIError
 from pydantic import ValidationError
 
 from backend.core.config import settings
@@ -65,6 +65,7 @@ def diagnose(symptom_text: str, image_path: str) -> Diagnosis:
     """Analyze an image with GPT-5.4 and return a validated diagnosis."""
 
     if not settings.openai_api_key:
+        log.error("diagnose op=vision_fallback error=missing_key")
         raise ProviderError("diagnosis", "missing OpenAI key")
 
     try:
@@ -100,11 +101,35 @@ def diagnose(symptom_text: str, image_path: str) -> Diagnosis:
         )
         diagnosis = Diagnosis.model_validate(json.loads(response.output_text))
     except (OpenAIError, OSError, json.JSONDecodeError, ValidationError, TypeError) as exc:
-        log.error("diagnose op=vision_fallback error=request_or_response_failed")
+        error, status, request_id = _safe_error_context(exc)
+        log.error(
+            "diagnose op=vision_fallback error=%s status=%s request_id=%s",
+            error,
+            status,
+            request_id,
+        )
         raise ProviderError("diagnosis", "OpenAI vision fallback failed") from exc
 
     log.info("diagnose op=vision_fallback ok=1 conf=%.2f", diagnosis.confidence)
     return diagnosis
+
+
+def _safe_error_context(exc: Exception) -> tuple[str, str, str]:
+    """Return privacy-safe provider diagnostics without response content."""
+
+    if isinstance(exc, APIStatusError):
+        return (
+            "status_error",
+            str(exc.status_code),
+            str(getattr(exc, "request_id", None) or "unknown"),
+        )
+    if isinstance(exc, APITimeoutError):
+        return "timeout", "none", "unknown"
+    if isinstance(exc, APIConnectionError):
+        return "connection_error", "none", "unknown"
+    if isinstance(exc, OSError):
+        return "image_file_error", "none", "unknown"
+    return "invalid_response", "none", "unknown"
 
 
 def _encode_image_data_uri(image_path: str) -> str:

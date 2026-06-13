@@ -165,6 +165,19 @@ def test_image_diagnosis_returns_notice_when_both_providers_fail(monkeypatch):
     assert result.diagnosis.condition == "Service busy"
 
 
+def test_swahili_diagnosis_failure_returns_swahili_notice(monkeypatch):
+    def boom(*args):
+        raise ProviderError("diagnosis")
+
+    monkeypatch.setattr(orch.nemotron_client, "diagnose", boom)
+    monkeypatch.setattr(orch.openai_vision_client, "diagnose", boom)
+
+    result = orch.analyze(AnalyzeRequest(language="sw", image_path="/tmp/maize.jpg"))
+
+    assert "Huduma ya utambuzi haipatikani" in result.localized_message
+    assert "diagnosis service" not in result.localized_message
+
+
 def test_confident_diagnosis_without_location_requests_location(monkeypatch):
     monkeypatch.setattr(orch.nemotron_client, "diagnose", lambda t, img=None: _crop())
     result = orch.analyze(AnalyzeRequest(language="en", text="maize spots"))

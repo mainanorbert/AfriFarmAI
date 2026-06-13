@@ -4,8 +4,9 @@ import json
 from types import SimpleNamespace
 from unittest.mock import Mock
 
+import httpx
 import pytest
-from openai import APIConnectionError
+from openai import APIConnectionError, BadRequestError
 
 from backend.core.errors import ProviderError
 from backend.services import openai_vision_client as vision
@@ -69,3 +70,18 @@ def test_diagnose_wraps_openai_failure(monkeypatch, tmp_path):
 
     with pytest.raises(ProviderError, match="OpenAI vision fallback failed"):
         vision.diagnose("", str(image))
+
+
+def test_safe_error_context_includes_status_and_request_id():
+    response = httpx.Response(
+        400,
+        request=httpx.Request("POST", "https://api.openai.com/v1/responses"),
+        headers={"x-request-id": "req_test"},
+    )
+    error = BadRequestError("bad request", response=response, body=None)
+
+    assert vision._safe_error_context(error) == (
+        "status_error",
+        "400",
+        "req_test",
+    )
