@@ -15,6 +15,11 @@ def _mock_providers(monkeypatch):
     monkeypatch.setattr(
         orch.tiny_aya_client, "translate_to_english", lambda text, lang: text
     )
+    monkeypatch.setattr(
+        orch.tiny_aya_client,
+        "localize_condition",
+        lambda condition, lang: "Ugonjwa wa majani ya mahindi",
+    )
     monkeypatch.setattr(orch.tiny_aya_client, "localize", lambda d, lang: "localized")
     monkeypatch.setattr(orch.tts_client, "synthesize", lambda text, lang: "/tmp/a.mp3")
     monkeypatch.setattr(
@@ -60,6 +65,7 @@ def test_confident_diagnosis_produces_localized_message_and_dealers(monkeypatch)
         AnalyzeRequest(language="sw", text="mahindi", lat=-0.1, lon=34.7)
     )
     assert result.diagnosis.subject == Subject.CROP
+    assert result.localized_condition == "Ugonjwa wa majani ya mahindi"
     assert result.localized_message == "localized"
     assert result.audio_reply_path == "/tmp/a.mp3"
     assert result.dealers, "expected dealers for a confident diagnosis"
@@ -96,6 +102,7 @@ def test_low_confidence_is_gated_and_drops_dealers(monkeypatch):
     )
     result = orch.analyze(AnalyzeRequest(language="en", text="something vague"))
     assert result.low_confidence is True
+    assert result.localized_condition is None
     assert result.dealers == []
     assert result.dealer_search_status == "not_requested"
 
@@ -123,7 +130,37 @@ def test_diagnosis_failure_returns_notice(monkeypatch):
         raise ProviderError("diagnosis")
 
     monkeypatch.setattr(orch.nemotron_client, "diagnose", boom)
+    fallback = pytest.fail
+    monkeypatch.setattr(orch.openai_vision_client, "diagnose", fallback)
     result = orch.analyze(AnalyzeRequest(language="en", text="my maize is sick"))
+    assert result.low_confidence is True
+    assert result.diagnosis.condition == "Service busy"
+
+
+def test_image_diagnosis_failure_uses_openai_fallback(monkeypatch):
+    def boom(t, img=None):
+        raise ProviderError("diagnosis")
+
+    monkeypatch.setattr(orch.nemotron_client, "diagnose", boom)
+    monkeypatch.setattr(orch.openai_vision_client, "diagnose", lambda t, img: _crop())
+
+    result = orch.analyze(
+        AnalyzeRequest(language="en", text="maize spots", image_path="/tmp/maize.jpg")
+    )
+
+    assert result.diagnosis.condition == "Maize leaf blight"
+    assert result.low_confidence is False
+
+
+def test_image_diagnosis_returns_notice_when_both_providers_fail(monkeypatch):
+    def boom(*args):
+        raise ProviderError("diagnosis")
+
+    monkeypatch.setattr(orch.nemotron_client, "diagnose", boom)
+    monkeypatch.setattr(orch.openai_vision_client, "diagnose", boom)
+
+    result = orch.analyze(AnalyzeRequest(language="en", image_path="/tmp/maize.jpg"))
+
     assert result.low_confidence is True
     assert result.diagnosis.condition == "Service busy"
 

@@ -12,7 +12,14 @@ from backend.core.geolocation import resolve_location
 from backend.core.logging_utils import get_logger
 from backend.core.models import AnalyzeRequest, AnalyzeResult, Diagnosis, Severity, Subject
 from backend.core.safety import apply_safety
-from backend.services import google_places, nemotron_client, stt_client, tiny_aya_client, tts_client
+from backend.services import (
+    google_places,
+    nemotron_client,
+    openai_vision_client,
+    stt_client,
+    tiny_aya_client,
+    tts_client,
+)
 
 log = get_logger("core.orchestration")
 
@@ -43,8 +50,9 @@ def analyze(req: AnalyzeRequest) -> AnalyzeResult:
     """Run the full assistant pipeline for one farmer request.
 
     Steps: transcribe the recording (or take typed text), forward-translate to
-    English, diagnose with the omni model + optional image, gate for safety,
-    localize, synthesize a spoken reply, and attach nearby dealers.
+    English, diagnose with the omni model + optional GPT-5.4 image fallback,
+    gate for safety, localize, synthesize a spoken reply, and attach nearby
+    dealers.
     """
 
     # 1) Source text — transcribe the farmer's recording, or take typed text.
@@ -76,18 +84,32 @@ def analyze(req: AnalyzeRequest) -> AnalyzeResult:
 
     # 2) Forward-translate to English (the diagnosis model is weak in Swahili),
     #    then 3) diagnose. Both the translate and diagnose calls are live.
+    symptom_en = tiny_aya_client.translate_to_english(transcript, req.language)
     try:
-        symptom_en = tiny_aya_client.translate_to_english(transcript, req.language)
         raw = nemotron_client.diagnose(symptom_en, req.image_path)
     except ProviderError:
-        log.info("analyze op=pipeline path=diagnosis_error")
-        return _notice(
-            req,
-            transcript,
-            "Service busy",
-            "The diagnosis service is unavailable right now. Please try again "
-            "in a moment.",
-        )
+        if req.image_path:
+            try:
+                log.warning("analyze op=pipeline path=openai_vision_fallback")
+                raw = openai_vision_client.diagnose(symptom_en, req.image_path)
+            except ProviderError:
+                log.info("analyze op=pipeline path=diagnosis_error")
+                return _notice(
+                    req,
+                    transcript,
+                    "Service busy",
+                    "The diagnosis service is unavailable right now. Please try again "
+                    "in a moment.",
+                )
+        else:
+            log.info("analyze op=pipeline path=diagnosis_error")
+            return _notice(
+                req,
+                transcript,
+                "Service busy",
+                "The diagnosis service is unavailable right now. Please try again "
+                "in a moment.",
+            )
 
     # 4) Safety gating (low-confidence fallback, escalation flags).
     diagnosis, low_confidence = apply_safety(raw)
@@ -114,6 +136,11 @@ def analyze(req: AnalyzeRequest) -> AnalyzeResult:
             log.warning("analyze op=agrovet_search ok=0")
 
     # 6) Localize to the farmer's language (degrades to English on failure).
+    localized_condition = (
+        tiny_aya_client.localize_condition(diagnosis.condition, req.language)
+        if disease_identified
+        else None
+    )
     message = tiny_aya_client.localize(diagnosis, req.language)
 
     # 7) Spoken reply.
@@ -129,6 +156,7 @@ def analyze(req: AnalyzeRequest) -> AnalyzeResult:
         language=req.language,
         diagnosis=diagnosis,
         localized_message=message,
+        localized_condition=localized_condition,
         audio_reply_path=audio_reply,
         dealers=found,
         dealer_search_status=dealer_status,

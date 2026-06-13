@@ -30,6 +30,7 @@ AfriFarmAI/
 │  │  ├─ tiny_aya_client.py           # Translation client with small LRU cache
 │  │  ├─ minicpmv_client.py           # Vision client (image prep, prompt)
 │  │  ├─ nemotron_client.py           # Reasoning client (JSON-only enforcement)
+│  │  ├─ openai_vision_client.py       # GPT-5.4 image-diagnosis fallback
 │  │  ├─ tts_client.py                # Pluggable REST TTS
 │  │  └─ google_places.py             # Required nearby-agrovet search tool
 │  ├─ core/                           # Cross-cutting app logic, schemas, prompts, safety, utils

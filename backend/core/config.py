@@ -27,6 +27,7 @@ class Settings:
 
     hf_token: str = os.getenv("HF_TOKEN", "")
     nvidia_api_key: str = os.getenv("NVIDIA_API_KEY", "")
+    openai_api_key: str = os.getenv("OPENAI_API_KEY", "")
     cohere_api_key: str = os.getenv("COHERE_API_KEY", "")
     google_places_api_key: str = os.getenv("GOOGLE_PLACES_API_KEY", "")
     modal_tts_url: str = os.getenv("MODAL_TTS_URL", "")
@@ -41,6 +42,7 @@ class Settings:
         "NVIDIA_BASE_URL",
         os.getenv("NEMOTRON_BASE_URL", "https://integrate.api.nvidia.com/v1"),
     )
+    openai_vision_model: str = os.getenv("OPENAI_VISION_MODEL", "gpt-5.4")
     tiny_aya_model: str = os.getenv("TINY_AYA_MODEL", "CohereLabs/tiny-aya-global")
     asr_model: str = os.getenv("ASR_MODEL", "openai/whisper-large-v3")
     cohere_transcribe_model: str = os.getenv(
