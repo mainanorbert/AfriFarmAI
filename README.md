@@ -46,6 +46,8 @@ model to provide practical and cost-conscious agricultural decision support:
 - Using a multimodal Nemotron model to consider both symptoms and images, then
   returning a structured diagnosis with severity, confidence, treatment, and
   prevention guidance.
+- Falling back to GPT-5.4 vision for image-backed requests when Nemotron is
+  unavailable, while preserving the same structured diagnosis and safety gates.
 - Applying a confidence threshold and safety checks. Uncertain, severe, urgent,
   or worsening cases are directed to an agricultural or veterinary
   professional rather than presented as certain diagnoses.
@@ -60,7 +62,8 @@ model to provide practical and cost-conscious agricultural decision support:
    combines these inputs.
 2. Voice is transcribed and Swahili text is translated into English.
 3. Nemotron analyzes the text and optional image and returns structured,
-   cautious diagnosis support.
+   cautious diagnosis support. If an image-backed Nemotron request fails,
+   GPT-5.4 vision performs the image diagnosis fallback.
 4. Safety rules validate the result and trigger a low-confidence fallback or
    professional escalation when needed.
 5. For a usable diagnosis, the application calls its Google Places agrovet
@@ -89,6 +92,7 @@ for a veterinarian, agronomist, or extension officer.
 | [Cohere Transcribe `cohere-transcribe-03-2026`](https://docs.cohere.com/docs/models) | Not publicly disclosed | Performs English speech-to-text transcription. |
 | [Whisper Large V3](https://huggingface.co/openai/whisper-large-v3) | 1.55B parameters | Performs Swahili speech-to-text through Hugging Face Inference because Cohere Transcribe does not support Swahili in this application. |
 | [NVIDIA Nemotron 3 Nano Omni 30B-A3B Reasoning](https://build.nvidia.com/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning/modelcard) | 30B total, about 3B active parameters | Uses text and optional images for crop or livestock diagnosis reasoning, severity, confidence, treatment, and prevention guidance. The sparse active parameter count improves inference efficiency. |
+| OpenAI GPT-5.4 | Not publicly disclosed | Fallback image analysis and disease identification when an image-backed Nemotron request fails. |
 | [VoxCPM2](https://huggingface.co/openbmb/VoxCPM2) | 2B parameters | Hosted on Modal and used for multilingual text-to-speech replies, with gTTS fallback. VoxCPM2 is TTS, not STT; the current integration does not clone or preserve the farmer's recorded voice or accent. |
 
 ## How Codex Was Used

@@ -169,6 +169,7 @@ def test_swahili_response_uses_localized_message_and_labels() -> None:
     result = _result().model_copy(
         update={
             "language": "sw",
+            "localized_condition": "Madoa ya majani yanayowezekana",
             "localized_message": "Ondoa majani yaliyoathirika.",
         }
     )
@@ -176,12 +177,32 @@ def test_swahili_response_uses_localized_message_and_labels() -> None:
     from frontend.app_ui import _render_response
 
     response = _render_response(result)
+    assert "### Madoa ya majani yanayowezekana / Possible leaf spot" in response
     assert "Ondoa majani yaliyoathirika." in response
     assert "**Wastani** | Uhakika: **72%**" in response
     assert "Hakuna wauzaji waliopendekezwa" in response
     assert "Moderate" not in response
     assert "Confidence" not in response
     assert "Nearby agro-dealers" not in response
+
+
+def test_swahili_low_confidence_does_not_show_english_placeholder_as_disease() -> None:
+    result = _result().model_copy(
+        update={
+            "language": "sw",
+            "diagnosis": _result().diagnosis.model_copy(
+                update={"condition": "Needs review", "confidence": 0.1}
+            ),
+            "localized_message": "Tatizo halijathibitishwa.",
+            "low_confidence": True,
+        }
+    )
+
+    response = _render_response(result)
+
+    assert " / Needs review" not in response
+    assert "Needs review" not in response
+    assert "Tatizo halijathibitishwa." in response
 
 
 def test_dynamic_agrovet_result_includes_distance_phone_and_map() -> None:

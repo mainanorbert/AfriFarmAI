@@ -83,6 +83,7 @@ class AnalyzeResult(BaseModel):
     language: Language
     diagnosis: Diagnosis
     localized_message: str
+    localized_condition: Optional[str] = None
     audio_reply_path: Optional[str] = None
     dealers: list[Dealer] = Field(default_factory=list)
     dealer_search_status: Literal[
