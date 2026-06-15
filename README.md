@@ -85,10 +85,14 @@ when searching for nearby agrovets.
 ## Links
 
 - **Live app:** https://build-small-hackathon-afri-farm-ai.hf.space/
-- **GitHub:** https://github.com/mainanorbert/AfriFarmAI
 - **Demo video:** https://www.youtube.com/watch?v=k14J4CnC_KE
 - **Social post:** https://www.linkedin.com/posts/norbert-osiemo-0256a4144_afrifarmai-agritech-smallmodels-share-7472353158942318592-wCZY/
 - **Build article:** [Building AfriFarmAI: Using Small, Specialized AI Models for Livestock and Diseases Identification](https://www.linkedin.com/pulse/building-afrifarmai-using-small-specialized-ai-models-norbert-osiemo-2c04f)
+- **GitHub:** https://github.com/mainanorbert/AfriFarmAI
+
+## Team
+
+- [norbertosiemo](https://huggingface.co/norbertosiemo)
 
 ## How It Is Built
 
