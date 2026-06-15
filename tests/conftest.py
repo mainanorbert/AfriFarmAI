@@ -10,6 +10,5 @@ import os
 
 os.environ.setdefault("HF_TOKEN", "test-hf-token")
 os.environ.setdefault("NVIDIA_API_KEY", "test-nvidia-key")
-os.environ.setdefault("OPENAI_API_KEY", "test-openai-key")
 os.environ.setdefault("COHERE_API_KEY", "test-cohere-key")
 os.environ.setdefault("GOOGLE_PLACES_API_KEY", "test-google-key")

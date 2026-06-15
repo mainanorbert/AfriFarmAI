@@ -130,10 +130,14 @@ APP_CSS = """
 }
 .brand-copy h1 {
     margin-bottom: .15rem;
-    color: #173f2a;
+    color: #0f3d24 !important;
     font-size: clamp(1.65rem, 4vw, 2.35rem);
 }
-.brand-copy p { margin: 0; color: #587061; }
+.brand-copy p {
+    margin: 0;
+    color: #28583a !important;
+    font-weight: 500;
+}
 .language-picker {
     flex: 0 0 165px !important;
     width: 165px !important;
@@ -421,8 +425,9 @@ APP_CSS = """
 }
 .camera-capture { margin-top: 8px; }
 .disclaimer {
-    color: #4d7758;
+    color: #28583a !important;
     font-size: .82rem;
+    font-weight: 500;
     text-align: center;
     padding: 14px 20px 4px;
 }

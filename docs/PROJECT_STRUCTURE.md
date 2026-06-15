@@ -19,7 +19,7 @@ AfriFarmAI/
 │  │  ├─ stt.py                       # /api/stt – Cohere Transcribe bridge (request/response shaping)
 │  │  ├─ translate.py                 # /api/translate – Tiny Aya 3B translation
 │  │  ├─ vision.py                    # /api/vision – MiniCPM-V 4.6 image analysis
-│  │  ├─ reason.py                    # /api/reason – Nemotron 30B reasoning
+│  │  ├─ reason.py                    # /api/reason – Nemotron 12B reasoning
 │  │  ├─ tts.py                       # /api/tts – TTS REST proxy (sw/en)
 │  │  ├─ dealers.py                   # /api/dealers/find – dynamic Google Places lookup
 │  │  ├─ analyze.py                   # /api/analyze – end-to-end orchestration
@@ -30,7 +30,6 @@ AfriFarmAI/
 │  │  ├─ tiny_aya_client.py           # Translation client with small LRU cache
 │  │  ├─ minicpmv_client.py           # Vision client (image prep, prompt)
 │  │  ├─ nemotron_client.py           # Reasoning client (JSON-only enforcement)
-│  │  ├─ openai_vision_client.py       # GPT-5.4 image-diagnosis fallback
 │  │  ├─ tts_client.py                # Pluggable REST TTS
 │  │  └─ google_places.py             # Required nearby-agrovet search tool
 │  ├─ core/                           # Cross-cutting app logic, schemas, prompts, safety, utils

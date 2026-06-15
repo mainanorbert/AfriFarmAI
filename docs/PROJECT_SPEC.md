@@ -45,8 +45,7 @@ ShambaAI is a multilingual AI-powered agricultural assistant that enables farmer
 * Cohere Transcribe
 * Tiny Aya
 * MiniCPM-V 4.6
-* Nemotron Nano Omni 30B-A3B
-* OpenAI GPT-5.4 (image-diagnosis fallback)
+* Nemotron Nano 12B V2 VL
 
 ### Database
 
