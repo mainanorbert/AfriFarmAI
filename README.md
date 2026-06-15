@@ -8,163 +8,103 @@ sdk_version: "6.17.3"
 python_version: "3.12"
 app_file: app.py
 pinned: false
-short_description: Crop and livestock health support for Kenyan farmers
+license: mit
+short_description: Multilingual crop and livestock health support for Kenyan farmers
+tags:
+  - track:backyard
+  - sponsor:nvidia
+  - achievement:fieldnotes
+  - sponsor:modal
+  - sponsor:openai
+  - sponsor:cohere
+  - achievement:off-brand
+  - achievement:best-agent
 ---
 
-# AfriFarmAI
+# AfriFarmAI - Small AI Models, Practical Support for Kenyan Farmers
 
-AfriFarmAI is an AI-powered crop and livestock health assistant for Kenyan
-smallholder farmers. It accepts text, voice, and images, then returns cautious
-diagnosis support, treatment and prevention guidance, spoken responses, and
-nearby agrovets where farmers can get further professional guidance and access
-recommended agricultural or veterinary supplies.
+AfriFarmAI helps Kenyan smallholder farmers identify likely crop and livestock
+health problems from text, voice, and photos. It returns cautious guidance in
+English or Swahili, reads the response aloud, and finds nearby agrovets with
+phone numbers and direct Google Maps directions.
 
-## The Problem
+The idea began with a friend who manages crop and livestock farms across Kenya.
+His workers often noticed problems early but struggled to describe symptoms
+accurately because of language and literacy barriers. AfriFarmAI lets them show
+or describe the problem and quickly receive practical decision support.
 
-Smallholder farmers often struggle to identify crop diseases and livestock
-illnesses early and accurately. Veterinarians, agronomists, and agricultural
-extension officers may be difficult to reach, especially in rural areas, so a
-delayed or incorrect response can lead to major losses.
+## What It Does
 
-Many digital tools also fail to serve these farmers effectively. Language and
-literacy barriers make it difficult to describe symptoms or understand advice,
-while manually searching for a nearby agrovet takes time. Large frontier AI
-models can provide useful analysis, but their higher inference costs can make
-them difficult to use in an affordable, accessible agricultural support tool.
+1. Accepts typed symptoms, voice recordings, crop photos, or animal photos.
+2. Transcribes and translates the farmer's input.
+3. Produces a structured diagnosis with confidence, severity, treatment,
+   prevention, and professional-escalation guidance.
+4. Returns localized text and spoken guidance.
+5. Finds nearby agrovets and displays their phone numbers, distances, addresses,
+   and Google Maps links.
 
-## The Solution
+AfriFarmAI is decision support, not a replacement for a veterinarian,
+agronomist, or agricultural extension officer. Uncertain, severe, urgent, or
+worsening cases are escalated to professionals.
 
-AfriFarmAI combines smaller, specialized AI models with a multimodal reasoning
-model to provide practical and cost-conscious agricultural decision support:
+## Why This Fits Build Small
 
-- Accepting typed symptoms, voice recordings, and crop or animal photos.
-- Transcribing English speech with Cohere Transcribe and Swahili speech with
-  Whisper, reducing the language barrier at input.
-- Using Tiny Aya Earth, a small multilingual model, to translate Swahili into
-  English for analysis and return advice in the farmer's language. Its smaller
-  size helps reduce inference cost.
-- Using NVIDIA Nemotron Nano 12B V2 VL to consider both symptoms and images,
-  then return a structured diagnosis with severity, confidence, treatment, and
-  prevention guidance.
-- Applying a confidence threshold and safety checks. Uncertain, severe, urgent,
-  or worsening cases are directed to an agricultural or veterinary
-  professional rather than presented as certain diagnoses.
-- Automatically searching Google Places for nearby agrovets after a usable
-  diagnosis, using the farmer's browser location only for that search.
-- Reading the response aloud with VoxCPM2, with gTTS as a fallback, so farmers
-  with limited literacy can speak to the application and hear its guidance.
+AfriFarmAI combines smaller, specialized models instead of relying on one large
+frontier model:
 
-## How It Works
-
-1. A farmer types symptoms, records a voice message, uploads a photo, or
-   combines these inputs.
-2. Voice is transcribed and Swahili text is translated into English.
-3. NVIDIA Nemotron Nano 12B V2 VL analyzes the text and optional image and
-   returns structured, cautious diagnosis support.
-4. Safety rules validate the result and trigger a low-confidence fallback or
-   professional escalation when needed.
-5. For a usable diagnosis, the application calls its Google Places agrovet
-   search tool and ranks nearby results by distance.
-6. Tiny Aya localizes the guidance, and VoxCPM2 generates a spoken reply.
-
-## Why AI Is Essential
-
-AI makes the experience accessible without requiring the farmer to manually
-translate symptoms, search disease catalogs, or inspect maps for suppliers.
-Multilingual translation and speech recognition reduce language and literacy
-barriers, while multimodal reasoning combines symptom descriptions with visual
-evidence for more useful support. The application orchestration can also call
-the nearby-agrovet search tool automatically after diagnosis.
-
-Reliability is supported by structured model output, Pydantic validation,
-low-temperature inference, confidence gating, safe fallbacks, and clear
-escalation to professionals. AfriFarmAI is decision support, not a replacement
-for a veterinarian, agronomist, or extension officer.
-
-## Models Used
-
-| Model | Published size | Use in AfriFarmAI |
+| Model | Size | Role |
 | --- | ---: | --- |
-| [Tiny Aya Earth](https://huggingface.co/CohereLabs/tiny-aya-earth) | 3.35B parameters | Hosted through Cohere and used for Swahili-to-English translation and farmer-facing localization. It is specialized for African and West Asian languages and offers a lower-cost multilingual step. |
-| [Cohere Transcribe `cohere-transcribe-03-2026`](https://docs.cohere.com/docs/models) | Not publicly disclosed | Performs English speech-to-text transcription. |
-| [Whisper Large V3](https://huggingface.co/openai/whisper-large-v3) | 1.55B parameters | Performs Swahili speech-to-text through Hugging Face Inference because Cohere Transcribe does not support Swahili in this application. |
-| [NVIDIA Nemotron Nano 12B V2 VL](https://build.nvidia.com/nvidia/nemotron-nano-12b-v2-vl/modelcard) | 12B parameters | Uses text and optional images for crop or livestock diagnosis reasoning, severity, confidence, treatment, and prevention guidance. |
-| [VoxCPM2](https://huggingface.co/openbmb/VoxCPM2) | 2B parameters | Hosted on Modal and used for multilingual text-to-speech replies, with gTTS fallback. VoxCPM2 is TTS, not STT; the current integration does not clone or preserve the farmer's recorded voice or accent. |
+| [NVIDIA Nemotron Nano 12B V2 VL](https://build.nvidia.com/nvidia/nemotron-nano-12b-v2-vl/modelcard) | 12B | Analyzes symptoms and optional images, then returns structured crop or livestock diagnosis support. |
+| [Tiny Aya Earth](https://huggingface.co/CohereLabs/tiny-aya-earth) | 3.35B | Translates Swahili input and localizes farmer-facing guidance. |
+| [Whisper Large V3](https://huggingface.co/openai/whisper-large-v3) | 1.55B | Transcribes Swahili speech through Hugging Face Inference. |
+| [Cohere Transcribe](https://docs.cohere.com/docs/models) | 2b | Transcribes English speech. |
+| [VoxCPM2](https://huggingface.co/openbmb/VoxCPM2) | 2B | Generates spoken English and Swahili responses through Modal, with gTTS fallback. |
 
-## Build Small Prize Areas
+The application minimizes sensitive information, uses privacy-safe structured
+logging, does not store farmer conversations, and uses browser location only
+when searching for nearby agrovets.
 
-AfriFarmAI targets the following
-[Build Small](https://build-small-hackathon-field-guide.hf.space/) track,
-sponsor prizes, and bonus badges:
+## Tracks And Prizes
 
-| Prize area | Model or platform | How it was used | Eligibility evidence |
-| --- | --- | --- | --- |
-| **Backyard AI** | Full AfriFarmAI model stack | Provides practical crop and livestock health decision support for Kenyan smallholder farmers through text, voice, photos, localized guidance, and nearby-agrovet results. | The project solves a real daily-life problem and ships as a Gradio application. |
-| **Nemotron Hardware Prize** | NVIDIA Nemotron Nano 12B V2 VL | Serves as the core multimodal diagnosis model, combining symptoms and optional images to produce structured severity, confidence, treatment, prevention, and escalation guidance. | Nemotron is a core part of the farmer-facing experience and remains below the 32B model cap. |
-| **Best Use of Modal** | VoxCPM2, hosted on Modal | Generates spoken English and Swahili replies for farmers with limited literacy; the application calls the authenticated Modal endpoint at runtime and falls back to gTTS when unavailable. | Modal is used directly in the runtime inference path and is documented in this README. |
-| **Best Use of Codex** | Codex coding agent | Supported architecture, implementation, testing, review, documentation, and the project-specific review and commit skills described below. | Qualifies when the connected GitHub repository or Space history includes Codex-attributed commits. |
-| **Off Brand** | Custom Gradio theme and CSS | Replaces the default Gradio appearance with a responsive forest-green interface, custom cards and controls, mobile styling, and light/dark themes. | The interface substantially customizes the stock Gradio look. |
-| **Best Agent** | Nemotron plus the AfriFarmAI orchestration pipeline | Runs a multi-step workflow across transcription, translation, multimodal diagnosis, safety validation, localization, speech synthesis, and an automatic Google Places nearby-agrovet tool call. | The application demonstrates multi-step tool use; final badge selection is subject to the judges' interpretation of agentic planning. |
-| **Judges' Wildcard** | Full AfriFarmAI model stack | Combines small multilingual, speech, and multimodal models to make cautious agricultural support more accessible. | Every valid submission is automatically considered. |
+- **Backyard AI:** Practical agricultural support inspired by a real challenge
+  faced by Kenyan farm workers.
+- **Nemotron Hardware Prize:** Nemotron Nano 12B V2 VL is the core multimodal
+  diagnosis model.
+- **Best Use of Modal:** Modal hosts VoxCPM2 for multilingual spoken responses.
+- **Cohere:** Cohere Transcribe handles English speech input, while Tiny Aya
+  Earth translates Swahili input and localizes farmer-facing guidance.
+- **Best Use of Codex:** Codex supported architecture, implementation, model
+  integration, testing, safety checks, documentation, and deployment preparation.
+- **Off Brand:** A custom responsive Gradio interface with light and dark themes.
+- **Best Agent:** A multi-step pipeline coordinates transcription, translation,
+  multimodal diagnosis, safety validation, localization, speech synthesis, and
+  a Google Places agrovet-search tool.
+- **Field Notes:** The linked build article explains the project story, model
+  choices, accessibility goals, and development journey.
 
-The project story, model choices, and accessibility goals are covered in the
-article
-[Building AfriFarmAI: Using Small, Specialized AI Models for Livestock and Diseases Identification](https://www.linkedin.com/pulse/building-afrifarmai-using-small-specialized-ai-models-norbert-osiemo-2c04f).
+## Links
 
-## How Codex Was Used
+- **Live app:** https://build-small-hackathon-afri-farm-ai.hf.space/
+- **GitHub:** https://github.com/mainanorbert/AfriFarmAI
+- **Demo video:** TODO - add the public demo-video URL before submission.
+- **Social post / build article:** [Building AfriFarmAI: Using Small, Specialized AI Models for Livestock and Diseases Identification](https://www.linkedin.com/pulse/building-afrifarmai-using-small-specialized-ai-models-norbert-osiemo-2c04f)
 
-Codex supported the project from initial scaffolding through implementation,
-testing, review, and documentation. It first helped create the project
-instructions in `AGENTS.md` and the architecture and implementation guidance in
-`docs/`, including setup commands, coding conventions, safety rules, and the
-documented folder structure.
+## How It Is Built
 
-Codex MCP servers were configured in `~/.codex/config.toml` to provide
-filesystem access, GitHub workflows, and current OpenAI developer
-documentation. Two project-specific Codex skills were also created:
+AfriFarmAI is a Python 3.12 Gradio application with Pydantic contracts and a
+single-process orchestration pipeline. It calls NVIDIA, Cohere, Hugging Face,
+Modal, and Google Places services through replaceable provider clients.
+Structured output validation, confidence gating, cautious treatment guidance,
+and professional escalation keep the experience practical and safety-focused.
 
-- `afri-farm-ai-review` reviews changes for bugs, architecture compliance,
-  agricultural safety, privacy-safe logging, missing tests, and exposed
-  secrets.
-- `afri-farm-commit` prepares scoped, verified commits, checks project
-  conventions, stages only intended files, and pushes only when explicitly
-  requested.
-
-## Installation
+## Run Locally
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
 cp .env.example .env
-```
-
-Fill `.env` with the required provider credentials. Never commit `.env`.
-
-## Run The Project
-
-AfriFarmAI uses a Gradio interface. From the project root, with `.venv`
-activated, run:
-
-```bash
 python app.py
 ```
 
-Open the Gradio URL printed in the terminal.
-
-## Screenshots And GIFs
-
-> Placeholder: Add screenshots of text, voice, image, diagnosis, and nearby
-> agrovet workflows.
-
-## Demo Video
-
-> Placeholder: Add demo video link.
-
-## Article
-
-[Building AfriFarmAI: Using Small, Specialized AI Models for Livestock and Diseases Identification](https://www.linkedin.com/pulse/building-afrifarmai-using-small-specialized-ai-models-norbert-osiemo-2c04f)
-
-## Social Post
-
-> Placeholder: Add social post link.
+Add the required provider credentials to `.env`. Never commit `.env`.
