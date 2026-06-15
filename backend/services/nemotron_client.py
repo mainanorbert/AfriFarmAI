@@ -1,6 +1,6 @@
-"""Diagnosis reasoning + image understanding via Nemotron 3 Nano Omni.
+"""Diagnosis reasoning + image understanding via Nemotron Nano 12B V2 VL.
 
-This single 30B-A3B omni model handles the crop/animal image *and* the symptom
+This single vision-language model handles the crop/animal image and symptom
 reasoning, so no separate vision model is required. Always live: any failure
 raises :class:`ProviderError` rather than returning canned data.
 """
