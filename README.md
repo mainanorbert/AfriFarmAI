@@ -9,7 +9,7 @@ python_version: "3.12"
 app_file: app.py
 pinned: false
 license: mit
-short_description: Multilingual crop and livestock health support for Kenyan farmers
+short_description: Diseases Identification and support for Kenyan farmers
 tags:
   - track:backyard
   - sponsor:nvidia
