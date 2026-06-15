@@ -21,11 +21,8 @@ from frontend.app_ui import APP_CSS, THEME, build_ui
 
 log = get_logger("app")
 log.info(
-    "startup op=provider_config nvidia=%s openai=%s openai_host=%s "
-    "cohere=%s hf=%s google=%s",
+    "startup op=provider_config nvidia=%s cohere=%s hf=%s google=%s",
     bool(settings.nvidia_api_key),
-    bool(settings.openai_api_key),
-    settings.openai_base_host,
     bool(settings.cohere_api_key),
     bool(settings.hf_token),
     bool(settings.google_places_api_key),

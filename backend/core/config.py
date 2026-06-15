@@ -10,7 +10,6 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from urllib.parse import urlparse
 
 from dotenv import dotenv_values, load_dotenv
 
@@ -28,7 +27,6 @@ class Settings:
 
     hf_token: str = os.getenv("HF_TOKEN", "")
     nvidia_api_key: str = os.getenv("NVIDIA_API_KEY", "")
-    openai_api_key: str = os.getenv("OPENAI_API_KEY", "")
     cohere_api_key: str = os.getenv("COHERE_API_KEY", "")
     google_places_api_key: str = os.getenv("GOOGLE_PLACES_API_KEY", "")
     modal_tts_url: str = os.getenv("MODAL_TTS_URL", "")
@@ -37,14 +35,12 @@ class Settings:
 
     nvidia_model_name: str = os.getenv(
         "NVIDIA_MODEL_NAME",
-        os.getenv("NEMOTRON_MODEL", "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning"),
+        os.getenv("NEMOTRON_MODEL", "nvidia/nemotron-nano-12b-v2-vl"),
     )
     nvidia_base_url: str = os.getenv(
         "NVIDIA_BASE_URL",
         os.getenv("NEMOTRON_BASE_URL", "https://integrate.api.nvidia.com/v1"),
     )
-    openai_vision_model: str = os.getenv("OPENAI_VISION_MODEL", "gpt-5.4")
-    openai_base_url: str = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
     tiny_aya_model: str = os.getenv("TINY_AYA_MODEL", "CohereLabs/tiny-aya-global")
     asr_model: str = os.getenv("ASR_MODEL", "openai/whisper-large-v3")
     cohere_transcribe_model: str = os.getenv(
@@ -66,12 +62,6 @@ class Settings:
         """Compatibility alias used by the diagnosis provider."""
 
         return self.nvidia_base_url
-
-    @property
-    def openai_base_host(self) -> str:
-        """Hostname only, safe for operational logging."""
-
-        return urlparse(self.openai_base_url).hostname or "invalid"
 
 
 def get_settings() -> Settings:

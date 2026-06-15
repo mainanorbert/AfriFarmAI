@@ -130,34 +130,16 @@ def test_diagnosis_failure_returns_notice(monkeypatch):
         raise ProviderError("diagnosis")
 
     monkeypatch.setattr(orch.nemotron_client, "diagnose", boom)
-    fallback = pytest.fail
-    monkeypatch.setattr(orch.openai_vision_client, "diagnose", fallback)
     result = orch.analyze(AnalyzeRequest(language="en", text="my maize is sick"))
     assert result.low_confidence is True
     assert result.diagnosis.condition == "Service busy"
 
 
-def test_image_diagnosis_failure_uses_openai_fallback(monkeypatch):
-    def boom(t, img=None):
-        raise ProviderError("diagnosis")
-
-    monkeypatch.setattr(orch.nemotron_client, "diagnose", boom)
-    monkeypatch.setattr(orch.openai_vision_client, "diagnose", lambda t, img: _crop())
-
-    result = orch.analyze(
-        AnalyzeRequest(language="en", text="maize spots", image_path="/tmp/maize.jpg")
-    )
-
-    assert result.diagnosis.condition == "Maize leaf blight"
-    assert result.low_confidence is False
-
-
-def test_image_diagnosis_returns_notice_when_both_providers_fail(monkeypatch):
+def test_image_diagnosis_failure_returns_notice(monkeypatch):
     def boom(*args):
         raise ProviderError("diagnosis")
 
     monkeypatch.setattr(orch.nemotron_client, "diagnose", boom)
-    monkeypatch.setattr(orch.openai_vision_client, "diagnose", boom)
 
     result = orch.analyze(AnalyzeRequest(language="en", image_path="/tmp/maize.jpg"))
 
@@ -170,7 +152,6 @@ def test_swahili_diagnosis_failure_returns_swahili_notice(monkeypatch):
         raise ProviderError("diagnosis")
 
     monkeypatch.setattr(orch.nemotron_client, "diagnose", boom)
-    monkeypatch.setattr(orch.openai_vision_client, "diagnose", boom)
 
     result = orch.analyze(AnalyzeRequest(language="sw", image_path="/tmp/maize.jpg"))
 

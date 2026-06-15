@@ -15,7 +15,6 @@ from backend.core.safety import apply_safety
 from backend.services import (
     google_places,
     nemotron_client,
-    openai_vision_client,
     stt_client,
     tiny_aya_client,
     tts_client,
@@ -56,9 +55,8 @@ def analyze(req: AnalyzeRequest) -> AnalyzeResult:
     """Run the full assistant pipeline for one farmer request.
 
     Steps: transcribe the recording (or take typed text), forward-translate to
-    English, diagnose with the omni model + optional GPT-5.4 image fallback,
-    gate for safety, localize, synthesize a spoken reply, and attach nearby
-    dealers.
+    English, diagnose with Nemotron, gate for safety, localize, synthesize a
+    spoken reply, and attach nearby dealers.
     """
 
     # 1) Source text — transcribe the farmer's recording, or take typed text.
@@ -104,38 +102,19 @@ def analyze(req: AnalyzeRequest) -> AnalyzeResult:
     try:
         raw = nemotron_client.diagnose(symptom_en, req.image_path)
     except ProviderError:
-        if req.image_path:
-            try:
-                log.warning("analyze op=pipeline path=openai_vision_fallback")
-                raw = openai_vision_client.diagnose(symptom_en, req.image_path)
-            except ProviderError:
-                log.info("analyze op=pipeline path=diagnosis_error")
-                return _notice(
-                    req,
-                    transcript,
-                    "Service busy",
-                    _message(
-                        req,
-                        "The diagnosis service is unavailable right now. Please try "
-                        "again in a moment.",
-                        "Huduma ya utambuzi haipatikani kwa sasa. Tafadhali jaribu "
-                        "tena baada ya muda mfupi.",
-                    ),
-                )
-        else:
-            log.info("analyze op=pipeline path=diagnosis_error")
-            return _notice(
+        log.info("analyze op=pipeline path=diagnosis_error")
+        return _notice(
+            req,
+            transcript,
+            "Service busy",
+            _message(
                 req,
-                transcript,
-                "Service busy",
-                _message(
-                    req,
-                    "The diagnosis service is unavailable right now. Please try "
-                    "again in a moment.",
-                    "Huduma ya utambuzi haipatikani kwa sasa. Tafadhali jaribu tena "
-                    "baada ya muda mfupi.",
-                ),
-            )
+                "The diagnosis service is unavailable right now. Please try "
+                "again in a moment.",
+                "Huduma ya utambuzi haipatikani kwa sasa. Tafadhali jaribu tena "
+                "baada ya muda mfupi.",
+            ),
+        )
 
     # 4) Safety gating (low-confidence fallback, escalation flags).
     diagnosis, low_confidence = apply_safety(raw)
